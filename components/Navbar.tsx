@@ -19,7 +19,7 @@ export default async function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-neutral-200 dark:border-neutral-800 bg-white/90 dark:bg-neutral-950/90 backdrop-blur">
-      <div className="max-w-screen-xl mx-auto px-4 h-14 flex items-center gap-4">
+      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-4">
         {/* Logo */}
         <Link
           href="/"
@@ -36,6 +36,12 @@ export default async function Navbar() {
             className="px-3 py-1.5 rounded-md text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
           >
             Docs
+          </Link>
+          <Link
+            href="/team"
+            className="px-3 py-1.5 rounded-md text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+          >
+            Team
           </Link>
         </nav>
 
