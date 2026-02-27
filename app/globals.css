@@ -1,39 +1,149 @@
 @import "tailwindcss";
+@import "shadcn/tailwind.css";
 @plugin "@tailwindcss/typography";
 
 /* Dark mode controlado por next-themes (clase "dark" en <html>) */
 @variant dark (&:where(.dark, .dark *));
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* ── Tailwind color tokens ───────────────────────────────── */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* ── Light mode ─────────────────────────────────────────── */
+:root {
+  --radius: 0.625rem;
+  --background: #ffffff;
+  --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+  --primary: oklch(0.546 0.245 262.881);
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: oklch(0.938 0.063 254);
+  --accent-foreground: oklch(0.35 0.15 262);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: oklch(0.546 0.245 262.881);
+}
+
+/* ── Dark mode ──────────────────────────────────────────── */
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;
+  --card: #171717;
+  --card-foreground: #ededed;
+  --popover: #171717;
+  --popover-foreground: #ededed;
+  --primary: oklch(0.707 0.165 254.624);
+  --primary-foreground: #ffffff;
+  --secondary: #262626;
+  --secondary-foreground: #ededed;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #262626;
+  --accent-foreground: #ededed;
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: rgba(255,255,255,0.1);
+  --input: rgba(255,255,255,0.15);
+  --ring: oklch(0.707 0.165 254.624);
 }
 
 body {
-  background: var(--color-background);
-  color: var(--color-foreground);
+  background: var(--background);
+  color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Scrollbar delgada para sidebars */
+/* Scrollbar flotante para sidebars */
 .thin-scrollbar {
   scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.thin-scrollbar:hover {
   scrollbar-color: #d1d5db transparent;
 }
-.dark .thin-scrollbar {
-  scrollbar-color: #3f3f46 transparent;
+.dark .thin-scrollbar:hover {
+  scrollbar-color: #ffffff transparent;
+}
+.thin-scrollbar::-webkit-scrollbar {
+  width: 2px;
+  background: transparent;
+}
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border: none;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+  border: none;
+}
+.thin-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+}
+.dark .thin-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: #ffffff;
+}
+
+/* Scrollbar minimalista para el TOC – estilo flotante sin track */
+.toc-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.toc-scrollbar:hover {
+  scrollbar-color: #d1d5db transparent;
+}
+.dark .toc-scrollbar:hover {
+  scrollbar-color: #ffffff transparent;
+}
+.toc-scrollbar::-webkit-scrollbar {
+  width: 2px;
+  background: transparent;
+}
+.toc-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border: none;
+}
+.toc-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+  border: none;
+}
+.toc-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+}
+.dark .toc-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: #ffffff;
 }
 
 /* Eliminar outline de anchors de headings */
@@ -44,3 +154,41 @@ body {
 .anchor:hover {
   text-decoration: none;
 }
+
+/* Heading anchor: icono de enlace aparece a la DERECHA al hover */
+/* Forzar color inherit para que los títulos NO se pinten de azul */
+.prose :is(h1,h2,h3,h4,h5,h6) a[href^="#"] {
+  color: inherit !important;
+  text-decoration: none !important;
+  background: none !important;
+  font-weight: inherit;
+}
+
+.prose :is(h1,h2,h3,h4,h5,h6) a[href^="#"]:hover {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+/* Icono de enlace a la derecha al hover */
+.prose :is(h1,h2,h3,h4,h5,h6):hover a[href^="#"]::after {
+  content: "";
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  margin-left: 0.35em;
+  vertical-align: middle;
+  opacity: 0.75;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  /* SVG negro puro — en dark mode se invierte a blanco con filter */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'/%3E%3C/svg%3E");
+}
+
+/* Icono de enlace — modo oscuro: invertir negro → blanco */
+@variant dark {
+  .prose :is(h1,h2,h3,h4,h5,h6):hover a[href^="#"]::after {
+    filter: invert(1);
+  }
+}
+
