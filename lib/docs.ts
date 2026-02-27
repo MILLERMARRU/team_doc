@@ -4,6 +4,7 @@
 
 import { getFileContent } from "./github";
 import type { DocsIndex, DocItem } from "@/types";
+import GithubSlugger from "github-slugger";
 
 const INDEX_PATH = "index.json";
 
@@ -123,6 +124,7 @@ export interface TocItem {
 }
 
 export function extractToc(markdown: string): TocItem[] {
+  const slugger = new GithubSlugger();
   const lines = markdown.split("\n");
   const items: TocItem[] = [];
 
@@ -132,10 +134,7 @@ export function extractToc(markdown: string): TocItem[] {
 
     const level = match[1].length;
     const text = match[2].replace(/`([^`]+)`/g, "$1").trim();
-    const id = text
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/\s+/g, "-");
+    const id = slugger.slug(text);
 
     items.push({ id, text, level });
   }
