@@ -56,7 +56,7 @@ export default function Footer() {
               href="/"
               className="inline-flex items-center gap-2 font-semibold text-neutral-900 dark:text-neutral-100"
             >
-              <BookOpen className="h-5 w-5 text-blue-600" />
+              <BookOpen className="h-5 w-5 text-neutral-900 dark:text-neutral-100" />
               <span>DocHubs</span>
             </Link>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed max-w-50">
