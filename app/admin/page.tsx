@@ -9,7 +9,7 @@ import { getDocsIndex } from "@/lib/docs";
 import AdminEditor from "./_components/AdminEditor";
 
 export const metadata = {
-  title: "Admin | DocHub",
+  title: "Admin | DocHubs",
 };
 
 export default async function AdminPage() {

@@ -57,7 +57,7 @@ export default function Footer() {
               className="inline-flex items-center gap-2 font-semibold text-neutral-900 dark:text-neutral-100"
             >
               <BookOpen className="h-5 w-5 text-blue-600" />
-              <span>DocHub</span>
+              <span>DocHubs</span>
             </Link>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed max-w-50">
               Aprende, documenta y comparte tu conocimiento técnico sin friction.
@@ -135,7 +135,7 @@ export default function Footer() {
         {/* ── Barra inferior ──────────────────────────────────── */}
         <div className="mt-12 pt-6 border-t border-neutral-100 dark:border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            © {year} DocHub. Licencia{" "}
+            © {year} DocHubs. Licencia{" "}
             <Link
               href="https://opensource.org/licenses/MIT"
               target="_blank"

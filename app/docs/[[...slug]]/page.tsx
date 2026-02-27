@@ -24,14 +24,14 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  if (!slug) return { title: "Documentación | DocHub" };
+  if (!slug) return { title: "Documentación | DocHubs" };
 
   const slugStr = slug.join("/");
   const index = await getDocsIndex();
   const item = findItemBySlug(index, slugStr);
 
   return {
-    title: item ? `${item.title} | DocHub` : "Documentación | DocHub",
+    title: item ? `${item.title} | DocHubs` : "Documentación | DocHubs",
     description: item?.description ?? "Documentación técnica autogestionable.",
   };
 }

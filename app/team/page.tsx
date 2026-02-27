@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Github, Globe, Linkedin, Mail, Phone } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Equipo | DocHub",
+  title: "Equipo | DocHubs",
   description: "Conoce al equipo detrás de este proyecto.",
 };
 

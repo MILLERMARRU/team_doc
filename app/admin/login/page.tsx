@@ -10,7 +10,7 @@ import LoginForm from "../_components/LoginForm";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export const metadata = {
-  title: "Login Admin | DocHub",
+  title: "Login Admin | DocHubs",
 };
 
 export default async function LoginPage() {
@@ -29,7 +29,7 @@ export default async function LoginPage() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <BookOpen className="h-6 w-6 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-bold">DocHub Admin</CardTitle>
+            <CardTitle className="text-2xl font-bold">DocHubs Admin</CardTitle>
             <CardDescription>
               Inicia sesión para gestionar la documentación
             </CardDescription>
