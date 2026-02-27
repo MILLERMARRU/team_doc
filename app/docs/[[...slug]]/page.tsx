@@ -177,8 +177,8 @@ async function DocsIndexPage() {
       {/* Hero */}
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-            <BookOpen className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          <div className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
+            <BookOpen className="h-6 w-6 text-neutral-900 dark:text-neutral-100" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Documentación</h1>
         </div>
