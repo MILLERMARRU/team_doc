@@ -1,0 +1,32 @@
+{
+  "name": "Proteger rama main",
+  "description": "Reglas para proteger la rama principal y garantizar calidad",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "include": [
+        "refs/heads/main"
+      ]
+    }
+  },
+  "rules": [
+    {
+      "type": "pull_request",
+      "parameters": {
+        "dismiss_stale_reviews_on_push": true,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_approving_review_count": 1
+      }
+    },
+    {
+      "type": "commit_message_pattern",
+      "parameters": {
+        "operator": "regex",
+        "pattern": "^(feat|fix|docs|style|refactor|test|chore):"
+      }
+    }
+  ]
+}
