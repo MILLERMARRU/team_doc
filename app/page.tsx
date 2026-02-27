@@ -14,17 +14,17 @@ export default function HomePage() {
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10"
-          style={{ background: "radial-gradient(ellipse at top, rgba(59,130,246,0.07), transparent 65%)" }}
+          style={{ background: "radial-gradient(ellipse at top, rgba(0,0,0,0.03), transparent 65%)" }}
         />
 
-        <div className="inline-flex items-center gap-2 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-full px-3 py-1 mb-8">
+        <div className="inline-flex items-center gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full px-3 py-1 mb-8">
           <Zap className="h-3 w-3" />
           Aprendemos · Documentamos · Compartimos
         </div>
 
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 max-w-3xl mx-auto leading-tight">
           Nuestro conocimiento merece{" "}
-          <span className="text-blue-600 dark:text-blue-400">un lugar donde vivir</span>
+          <span className="text-neutral-900 dark:text-neutral-100">un lugar donde vivir</span>
         </h1>
 
         <p className="mt-6 text-lg text-neutral-500 dark:text-neutral-400 max-w-xl mx-auto leading-relaxed">
@@ -36,7 +36,7 @@ export default function HomePage() {
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/docs"
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg px-5 py-2.5 transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 bg-neutral-900 hover:bg-neutral-700 dark:bg-neutral-100 dark:hover:bg-neutral-300 text-white dark:text-neutral-900 text-sm font-semibold rounded-lg px-5 py-2.5 transition-colors shadow-sm"
           >
             <BookOpen className="h-4 w-4" />
             Ver documentación
@@ -53,7 +53,7 @@ export default function HomePage() {
       {/* ── Para qué está construido ─────────────────────── */}
       <section className="py-20 px-4">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 dark:text-blue-400 mb-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-4">
             De developers, para developers
           </p>
           <h2 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-6 leading-snug">
@@ -88,7 +88,7 @@ export default function HomePage() {
                 key={item.title}
                 className="flex flex-col gap-3 p-5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50"
               >
-                <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shrink-0">
+                <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 shrink-0">
                   {item.icon}
                 </div>
                 <div>
@@ -110,7 +110,7 @@ export default function HomePage() {
       <section className="py-20 px-4 bg-neutral-50 dark:bg-neutral-900/40">
         <div className="max-w-5xl mx-auto">
           <div className="max-w-2xl mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 dark:text-blue-400 mb-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-3">
               Código abierto
             </p>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-4 leading-snug">
@@ -158,10 +158,10 @@ export default function HomePage() {
             ].map((f) => (
               <div
                 key={f.title}
-                className="group bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-5 hover:border-blue-200 dark:hover:border-blue-800 transition-colors"
+                className="group bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-5 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors"
               >
                 <div className="flex items-center gap-2.5 mb-3">
-                  <div className="p-1.5 bg-neutral-100 dark:bg-neutral-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 rounded-md text-neutral-500 dark:text-neutral-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <div className="p-1.5 bg-neutral-100 dark:bg-neutral-800 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700 rounded-md text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-100 transition-colors">
                     {f.icon}
                   </div>
                   <h3 className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">{f.title}</h3>
