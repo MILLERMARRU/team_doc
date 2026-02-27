@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,9 +17,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DocHub – Documentación autogestionable",
+  title: {
+    default: "DocHub – Comparte lo que aprendes",
+    template: "%s · DocHub",
+  },
   description:
-    "Sitio de documentación dinámica con GitHub como storage. Sin redeploy.",
+    "Plataforma de documentación colaborativa donde developers comparten su aprendizaje. Escribe, publica y aprende con la comunidad.",
+  icons: {
+    icon: "/logo.svg",
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
+  },
+  keywords: ["documentación", "aprendizaje", "developers", "conocimiento", "open source"],
+  authors: [{ name: "Miller" }, { name: "Sam" }],
 };
 
 export default function RootLayout({
@@ -33,6 +45,8 @@ export default function RootLayout({
         <Providers>
           <Navbar />
           <main>{children}</main>
+          <Footer />
+          <Toaster richColors position="top-right" closeButton />
         </Providers>
       </body>
     </html>
