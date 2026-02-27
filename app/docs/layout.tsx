@@ -21,7 +21,7 @@ export default async function DocsLayout({
   }
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 flex min-h-[calc(100vh-3.5rem)]">
+    <div className="max-w-full px-16 flex min-h-[calc(100vh-3.5rem)]">
       {/* ── Columna izquierda: Sidebar (escritorio) ─────────── */}
       <aside className="hidden lg:block w-56 xl:w-64 shrink-0 py-8 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto thin-scrollbar">
         <Sidebar index={index} />
