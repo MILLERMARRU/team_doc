@@ -11,7 +11,8 @@ import { getDocsIndex, getDocContent, findItemBySlug, extractToc } from "@/lib/d
 import Markdown from "@/components/docs/Markdown";
 import Toc from "@/components/docs/Toc";
 import Link from "next/link";
-import { BookOpen, ArrowRight } from "lucide-react";
+import { BookOpen, ArrowRight, ArrowLeft, ChevronRight } from "lucide-react";
+import type { DocItem } from "@/types";
 
 interface PageProps {
   params: Promise<{ slug?: string[] }>;
@@ -23,14 +24,14 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  if (!slug) return { title: "Documentación | DocHub" };
+  if (!slug) return { title: "Documentación | DocHubs" };
 
   const slugStr = slug.join("/");
   const index = await getDocsIndex();
   const item = findItemBySlug(index, slugStr);
 
   return {
-    title: item ? `${item.title} | DocHub` : "Documentación | DocHub",
+    title: item ? `${item.title} | DocHubs` : "Documentación | DocHubs",
     description: item?.description ?? "Documentación técnica autogestionable.",
   };
 }
@@ -58,8 +59,21 @@ export default async function DocsPage({ params }: PageProps) {
   const item = findItemBySlug(index, slugStr);
   const toc = extractToc(content);
 
+  // ── Prev / Next ───────────────────────────────────────────
+  const allItems: (DocItem & { sectionTitle: string })[] = index.sections
+    .sort((a, b) => a.order - b.order)
+    .flatMap((s) =>
+      [...s.items].sort((a, b) => a.order - b.order).map((it) => ({
+        ...it,
+        sectionTitle: s.title,
+      }))
+    );
+  const currentIdx = allItems.findIndex((it) => it.slug === slugStr);
+  const prevItem = currentIdx > 0 ? allItems[currentIdx - 1] : null;
+  const nextItem = currentIdx < allItems.length - 1 ? allItems[currentIdx + 1] : null;
+
   return (
-    <div className="flex gap-8 xl:gap-12">
+    <div className="flex gap-12 xl:gap-32">
       {/* Contenido principal */}
       <article className="flex-1 min-w-0">
         {/* Breadcrumb */}
@@ -92,17 +106,55 @@ export default async function DocsPage({ params }: PageProps) {
         {/* Markdown */}
         <Markdown content={content} />
 
-        {/* Footer del doc */}
-        <div className="mt-12 pt-6 border-t border-neutral-200 dark:border-neutral-800">
-          <p className="text-xs text-neutral-400">
-            Contenido almacenado en GitHub. Los cambios se ven de inmediato sin redeploy.
-          </p>
-        </div>
+        {/* Footer: navigación prev / next */}
+        {(prevItem || nextItem) && (
+          <div className="mt-12 pt-6 border-t border-neutral-200 dark:border-neutral-800 grid grid-cols-2 gap-4">
+            {/* Anterior */}
+            <div>
+              {prevItem && (
+                <Link
+                  href={`/docs/${prevItem.slug}`}
+                  className="group flex flex-col gap-1 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50/40 dark:hover:bg-blue-900/10 transition-all"
+                >
+                  <span className="flex items-center gap-1 text-xs text-neutral-400 dark:text-neutral-500 group-hover:text-blue-500 transition-colors">
+                    <ArrowLeft className="h-3 w-3" /> Anterior
+                  </span>
+                  <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {prevItem.title}
+                  </span>
+                  <span className="text-xs text-neutral-400 dark:text-neutral-500">
+                    {prevItem.sectionTitle}
+                  </span>
+                </Link>
+              )}
+            </div>
+
+            {/* Siguiente */}
+            <div className="flex justify-end">
+              {nextItem && (
+                <Link
+                  href={`/docs/${nextItem.slug}`}
+                  className="group flex flex-col gap-1 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50/40 dark:hover:bg-blue-900/10 transition-all text-right w-full"
+                >
+                  <span className="flex items-center justify-end gap-1 text-xs text-neutral-400 dark:text-neutral-500 group-hover:text-blue-500 transition-colors">
+                    Siguiente <ChevronRight className="h-3 w-3" />
+                  </span>
+                  <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {nextItem.title}
+                  </span>
+                  <span className="text-xs text-neutral-400 dark:text-neutral-500">
+                    {nextItem.sectionTitle}
+                  </span>
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
       </article>
 
       {/* TOC derecha */}
       {toc.length > 0 && (
-        <aside className="hidden xl:block w-48 shrink-0 sticky top-20 h-fit">
+        <aside className="hidden xl:block w-64 shrink-0 sticky top-20 h-fit">
           <Toc items={toc} />
         </aside>
       )}

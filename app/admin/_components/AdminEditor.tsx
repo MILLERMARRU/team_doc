@@ -11,21 +11,37 @@ import {
   Eye,
   EyeOff,
   Upload,
-  CheckCircle,
-  AlertCircle,
   Info,
+  Loader2,
+  Type,
+  FolderOpen,
+  Hash,
+  AlignLeft,
+  Tag,
+  ListOrdered,
+  FileCode,
+  LogOut,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { DocsIndex } from "@/types";
 
+// ── Componente principal ─────────────────────────────────────
 interface AdminEditorProps {
   username: string;
   index: DocsIndex;
 }
-
-type Status = "idle" | "loading" | "success" | "error";
 
 export default function AdminEditor({ username, index }: AdminEditorProps) {
   const router = useRouter();
@@ -43,8 +59,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
 
   // UI
   const [preview, setPreview] = useState(false);
-  const [status, setStatus] = useState<Status>("idle");
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const existingSections = index.sections.map((s) => s.title);
   const activeSection = section === "__new__" ? customSection : section;
@@ -69,14 +84,18 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
-      setStatus("error");
-      setMessage("El archivo es demasiado grande (máx. 2MB)");
+      toast.error("Archivo demasiado grande", {
+        description: "El archivo supera el límite de 2 MB permitido.",
+      });
       return;
     }
     const reader = new FileReader();
     reader.onload = (ev) => {
       const text = ev.target?.result as string;
       setContent(text);
+      toast.success("Archivo cargado", {
+        description: `${file.name} cargado correctamente.`,
+      });
     };
     reader.readAsText(file);
   }
@@ -91,8 +110,11 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
   // Enviar al endpoint
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setStatus("loading");
-    setMessage("");
+    setLoading(true);
+
+    const toastId = toast.loading("Guardando en GitHub...", {
+      description: "Esto puede tardar unos segundos.",
+    });
 
     const fullSlug = activeSection
       ? `${activeSection.toLowerCase().replace(/\s+/g, "-")}/${slug}`
@@ -119,13 +141,17 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        setStatus("error");
-        setMessage(data.error ?? "Error desconocido");
+        toast.error("No se pudo publicar", {
+          id: toastId,
+          description: data.error ?? "Error desconocido.",
+        });
         return;
       }
 
-      setStatus("success");
-      setMessage(`✓ Publicado en /docs/${data.slug}`);
+      toast.success("Documento publicado", {
+        id: toastId,
+        description: `Disponible en /docs/${data.slug}`,
+      });
 
       // Limpiar formulario
       setTitle("");
@@ -139,174 +165,194 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
 
       router.refresh();
     } catch {
-      setStatus("error");
-      setMessage("Error de red. Revisa la conexión.");
+      toast.error("Error de conexión", {
+        id: toastId,
+        description: "No se pudo conectar con el servidor.",
+      });
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 p-4 sm:p-6 lg:p-8">
-      {/* Header */}
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-              Panel Admin
-            </h1>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Hola, <strong>{username}</strong> — Publica documentación directamente en GitHub
+            <h1 className="text-2xl font-bold">Panel Admin</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Hola,{" "}
+              <strong className="text-foreground">{username}</strong>
+              {" "}— Publica documentación directamente en GitHub
             </p>
           </div>
           <button
+            type="button"
             onClick={handleLogout}
-            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+            className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-red-400 dark:text-red-400/70 transition-colors hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20"
           >
+            <LogOut className="h-3.5 w-3.5" />
             Cerrar sesión
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* ── Columna izquierda ─────────────────────── */}
-            <div className="space-y-5">
+          {/* Grid 40 / 60 */}
+          <div className="grid gap-6 md:grid-cols-[40%_60%]">
+
+            {/* ── Columna izquierda (40%) ────────────────── */}
+            <div className="space-y-4">
+
               {/* Título */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Título *
-                </label>
-                <input
-                  type="text"
+              <div className="space-y-1.5">
+                <Label htmlFor="title" className="flex items-center gap-1.5">
+                  <Type className="h-3.5 w-3.5 text-muted-foreground" />
+                  Título <span className="text-destructive ml-0.5">*</span>
+                </Label>
+                <Input
+                  id="title"
                   value={title}
                   onChange={(e) => handleTitleChange(e.target.value)}
                   required
-                  placeholder="Ej: Docker build"
-                  className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors"
+                  placeholder="Ej: Guía de Docker"
                 />
               </div>
 
               {/* Sección */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Sección *
-                </label>
-                <select
-                  value={section}
-                  onChange={(e) => setSection(e.target.value)}
-                  required
-                  className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors"
-                >
-                  <option value="">Selecciona o crea una sección</option>
-                  {existingSections.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                  <option value="__new__">+ Nueva sección</option>
-                </select>
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5">
+                  <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                  Sección <span className="text-destructive ml-0.5">*</span>
+                </Label>
+                <Select value={section} onValueChange={setSection} required>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecciona o crea una sección" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {existingSections.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="__new__">
+                      <span className="text-primary font-medium">+ Nueva sección</span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
                 {section === "__new__" && (
-                  <input
-                    type="text"
+                  <Input
                     value={customSection}
                     onChange={(e) => setCustomSection(e.target.value)}
                     required
                     placeholder="Nombre de la nueva sección"
-                    className="mt-2 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors"
+                    className="mt-1.5"
                   />
                 )}
               </div>
 
               {/* Slug */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Slug *
-                  <span className="ml-2 text-xs text-neutral-400 font-normal">
-                    (solo minúsculas, números y guiones)
+              <div className="space-y-1.5">
+                <Label htmlFor="slug" className="flex items-center gap-1.5">
+                  <Hash className="h-3.5 w-3.5 text-muted-foreground" />
+                  Slug <span className="text-destructive ml-0.5">*</span>
+                  <span className="ml-1 text-xs font-normal text-muted-foreground">
+                    (minúsculas y guiones)
                   </span>
-                </label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-neutral-400 shrink-0">
-                    {activeSection
-                      ? `${activeSection.toLowerCase().replace(/\s+/g, "-")}/`
-                      : ""}
-                  </span>
-                  <input
-                    type="text"
+                </Label>
+                <div className="flex items-center gap-1.5">
+                  {activeSection && (
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {activeSection.toLowerCase().replace(/\s+/g, "-")}/
+                    </span>
+                  )}
+                  <Input
+                    id="slug"
                     value={slug}
                     onChange={(e) =>
                       setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
                     }
                     required
-                    placeholder="docker-build"
-                    className="flex-1 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors"
+                    placeholder="mi-documento"
+                    className="flex-1"
                   />
                 </div>
               </div>
 
               {/* Descripción */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+              <div className="space-y-1.5">
+                <Label htmlFor="description" className="flex items-center gap-1.5">
+                  <AlignLeft className="h-3.5 w-3.5 text-muted-foreground" />
                   Descripción corta
-                  <span className="ml-2 text-xs text-neutral-400 font-normal">
-                    (para búsqueda y tarjetas)
+                  <span className="ml-1 text-xs font-normal text-muted-foreground">
+                    (búsqueda y tarjetas)
                   </span>
-                </label>
-                <input
-                  type="text"
+                </Label>
+                <Input
+                  id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Breve descripción del documento..."
-                  className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors"
+                  placeholder="Breve descripción del documento…"
                 />
               </div>
 
               {/* Tags */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+              <div className="space-y-1.5">
+                <Label htmlFor="tags" className="flex items-center gap-1.5">
+                  <Tag className="h-3.5 w-3.5 text-muted-foreground" />
                   Tags
-                  <span className="ml-2 text-xs text-neutral-400 font-normal">
+                  <span className="ml-1 text-xs font-normal text-muted-foreground">
                     (separados por coma)
                   </span>
-                </label>
-                <input
-                  type="text"
+                </Label>
+                <Input
+                  id="tags"
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
                   placeholder="docker, cli, devops"
-                  className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors"
                 />
               </div>
 
               {/* Orden */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Orden dentro de la sección
-                </label>
-                <input
-                  type="number"
-                  value={order}
-                  onChange={(e) => setOrder(e.target.value)}
-                  min="1"
-                  className="w-24 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors"
-                />
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5">
+                  <ListOrdered className="h-3.5 w-3.5 text-muted-foreground" />
+                  Orden en la sección
+                </Label>
+                <Select value={order} onValueChange={setOrder}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Posición" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => (
+                      <SelectItem key={n} value={String(n)}>
+                        Posición {n}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            {/* ── Columna derecha: Editor Markdown ─────── */}
-            <div className="space-y-3">
+            {/* ── Columna derecha (60%) — Editor Markdown ── */}
+            <div className="flex flex-col space-y-3">
               <div className="flex items-center justify-between">
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  Contenido Markdown *
-                </label>
-                <div className="flex items-center gap-2">
-                  {/* Upload .md */}
-                  <button
+                <Label className="flex items-center gap-1.5">
+                  <FileCode className="h-3.5 w-3.5 text-muted-foreground" />
+                  Contenido Markdown{" "}
+                  <span className="text-destructive ml-0.5">*</span>
+                </Label>
+                <div className="flex items-center gap-1">
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => fileRef.current?.click()}
-                    className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+                    className="h-7 gap-1.5 text-xs text-muted-foreground cursor-pointer"
                   >
                     <Upload className="h-3.5 w-3.5" />
                     Cargar .md
-                  </button>
+                  </Button>
                   <input
                     ref={fileRef}
                     type="file"
@@ -314,55 +360,44 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
                     onChange={handleFileUpload}
                     className="hidden"
                   />
-
-                  {/* Toggle preview */}
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setPreview((p) => !p)}
-                    className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+                    className="h-7 gap-1.5 text-xs text-muted-foreground cursor-pointer"
                   >
                     {preview ? (
-                      <>
-                        <EyeOff className="h-3.5 w-3.5" /> Editor
-                      </>
+                      <><EyeOff className="h-3.5 w-3.5" /> Editor</>
                     ) : (
-                      <>
-                        <Eye className="h-3.5 w-3.5" /> Vista previa
-                      </>
+                      <><Eye className="h-3.5 w-3.5" /> Vista previa</>
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               {preview ? (
-                /* Vista previa */
-                <div className="rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 min-h-72 max-h-96 overflow-y-auto">
+                <div className="flex-1 rounded-lg border border-border bg-card p-4 overflow-y-auto" style={{ minHeight: 520 }}>
                   {content ? (
                     <div className="prose dark:prose-invert max-w-none text-sm">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {content}
-                      </ReactMarkdown>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
                     </div>
                   ) : (
-                    <p className="text-sm text-neutral-400 italic">
-                      Sin contenido todavía...
-                    </p>
+                    <p className="text-sm text-muted-foreground italic">Sin contenido todavía…</p>
                   )}
                 </div>
               ) : (
-                /* Editor de texto */
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   required
-                  placeholder={`# Título del documento\n\nEscribe o pega tu Markdown aquí...\n\n## Sección\n\nContenido...`}
-                  rows={16}
-                  className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors resize-none"
+                  placeholder={`# Título del documento\n\nEscribe o pega tu Markdown aquí…\n\n## Sección\n\nContenido...`}
+                  className="flex-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring transition-colors resize-none"
+                  style={{ minHeight: 520 }}
                 />
               )}
 
-              {/* Info del archivo */}
-              <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Info className="h-3.5 w-3.5 shrink-0" />
                 {content
                   ? `${content.length.toLocaleString()} caracteres · ${(new Blob([content]).size / 1024).toFixed(1)} KB`
@@ -371,45 +406,19 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
             </div>
           </div>
 
-          {/* Status */}
-          {status !== "idle" && (
-            <div
-              className={cn(
-                "flex items-center gap-2 text-sm rounded-lg px-4 py-3 border",
-                status === "success" &&
-                  "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400",
-                status === "error" &&
-                  "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400",
-                status === "loading" &&
-                  "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400"
-              )}
-            >
-              {status === "success" && <CheckCircle className="h-4 w-4 shrink-0" />}
-              {status === "error" && <AlertCircle className="h-4 w-4 shrink-0" />}
-              {status === "loading" && (
-                <span className="h-4 w-4 shrink-0 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
-              )}
-              {status === "loading" ? "Guardando en GitHub..." : message}
-            </div>
-          )}
-
           {/* Submit */}
-          <div className="flex items-center justify-end gap-4 pt-2 border-t border-neutral-200 dark:border-neutral-800">
-            <p className="text-xs text-neutral-400">
+          <div className="flex items-center justify-end gap-4 pt-4 border-t border-border">
+            <p className="text-xs text-muted-foreground">
               Se guardará en GitHub y será visible de inmediato.
             </p>
-            <button
-              type="submit"
-              disabled={status === "loading"}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg px-5 py-2.5 transition-colors"
-            >
-              {status === "loading" ? (
-                <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <Button type="submit" disabled={loading} className="gap-2 cursor-pointer disabled:cursor-not-allowed">
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Save className="h-4 w-4" />
               )}
               Publicar documento
-            </button>
+            </Button>
           </div>
         </form>
       </div>

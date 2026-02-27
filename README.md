@@ -1,4 +1,4 @@
-# DocHub — Documentación autogestionable sin redeploy
+# DocHubs — Documentación autogestionable sin redeploy
 
 > Sitio de documentación técnica donde el usuario sube/pega Markdown desde un panel `/admin` y el contenido aparece **al instante** en el sitio, usando **GitHub** como storage. Sin builds, sin deploys.
 

@@ -7,9 +7,10 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { BookOpen } from "lucide-react";
 import LoginForm from "../_components/LoginForm";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export const metadata = {
-  title: "Login Admin | DocHub",
+  title: "Login Admin | DocHubs",
 };
 
 export default async function LoginPage() {
@@ -23,30 +24,22 @@ export default async function LoginPage() {
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 mb-4">
-            <BookOpen className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-            DocHub Admin
-          </h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1.5">
-            Inicia sesión para gestionar la documentación
-          </p>
-        </div>
-
-        {/* Card */}
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm">
-          <LoginForm />
-        </div>
-
-        {/* Hint credenciales por defecto */}
-        <p className="text-center text-xs text-neutral-400 mt-4">
-          Credenciales por defecto: <code className="font-mono">admin</code> /{" "}
-          <code className="font-mono">admin123</code>
-        </p>
+        <Card className="shadow-lg border-border">
+          <CardHeader className="pb-4 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+              <BookOpen className="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-bold">DocHubs Admin</CardTitle>
+            <CardDescription>
+              Inicia sesión para gestionar la documentación
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <LoginForm />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
+
