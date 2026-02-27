@@ -7,6 +7,7 @@ import Link from "next/link";
 import { BookOpen, LayoutDashboard } from "lucide-react";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import SearchCmdk from "@/components/docs/SearchCmdk";
+import MobileMenu from "@/components/MobileMenu";
 import { getDocsIndex } from "@/lib/docs";
 
 export default async function Navbar() {
@@ -62,6 +63,9 @@ export default async function Navbar() {
 
         {/* Tema */}
         <ThemeToggle />
+
+        {/* Menú móvil */}
+        <MobileMenu />
       </div>
     </header>
   );
