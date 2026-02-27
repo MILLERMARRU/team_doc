@@ -50,7 +50,7 @@ export default function TeamPage() {
 
         {/* Header */}
         <div className="text-center mb-16">
-          <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 dark:text-blue-400 mb-3">
+          <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-3">
             Las personas detrás del proyecto
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 mb-4">
@@ -94,7 +94,7 @@ export default function TeamPage() {
                     rel={link.type !== "phone" ? "noopener noreferrer" : undefined}
                     className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors group"
                   >
-                    <span className="text-neutral-400 dark:text-neutral-500 group-hover:text-blue-500 transition-colors">
+                    <span className="text-neutral-400 dark:text-neutral-500 group-hover:text-neutral-900 dark:group-hover:text-neutral-100 transition-colors">
                       {iconMap[link.type]}
                     </span>
                     <span className="truncate">{link.label}</span>
