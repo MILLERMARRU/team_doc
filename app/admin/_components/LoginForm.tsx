@@ -1,23 +1,26 @@
 "use client";
 // ============================================================
 //  app/admin/_components/LoginForm.tsx
-//  Formulario de login client-side
+//  Formulario de login con shadcn/ui + notificaciones sonner
 // ============================================================
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogIn, AlertCircle } from "lucide-react";
+import { LogIn, Loader2, User, Lock, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function LoginForm() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     try {
@@ -30,68 +33,90 @@ export default function LoginForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "Error desconocido");
+        toast.error(data.error ?? "Credenciales incorrectas", {
+          description: "Verifica tu usuario y contraseña e intenta de nuevo.",
+        });
         return;
       }
 
+      toast.success("Sesión iniciada", {
+        description: `Bienvenido, ${username}.`,
+      });
       router.push("/admin");
       router.refresh();
     } catch {
-      setError("Error de red. Intenta de nuevo.");
+      toast.error("Error de conexión", {
+        description: "No se pudo conectar con el servidor. Intenta de nuevo.",
+      });
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          {error}
-        </div>
-      )}
-
-      <div>
-        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Usuario */}
+      <div className="space-y-1.5">
+        <Label htmlFor="username" className="flex items-center gap-1.5">
+          <User className="h-3.5 w-3.5 text-muted-foreground" />
           Usuario
-        </label>
-        <input
+        </Label>
+        <Input
+          id="username"
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
           autoComplete="username"
-          className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors"
+          autoFocus
+          placeholder="Tu nombre de usuario"
+          disabled={loading}
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+      {/* Contraseña */}
+      <div className="space-y-1.5">
+        <Label htmlFor="password" className="flex items-center gap-1.5">
+          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
           Contraseña
-        </label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoComplete="current-password"
-          className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors"
-        />
+        </Label>
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+            placeholder="Tu contraseña"
+            disabled={loading}
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            disabled={loading}
+            className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+            tabIndex={-1}
+            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
       </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg px-4 py-2.5 transition-colors"
-      >
+      <Button type="submit" disabled={loading} className="w-full gap-2">
         {loading ? (
-          <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           <LogIn className="h-4 w-4" />
         )}
         {loading ? "Iniciando sesión..." : "Iniciar sesión"}
-      </button>
+      </Button>
     </form>
   );
 }
