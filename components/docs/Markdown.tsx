@@ -34,7 +34,7 @@ function CopyButton({ text }: { text: string }) {
     <button
       onClick={handleCopy}
       aria-label={copied ? "Copiado" : "Copiar código"}
-      className="absolute top-3 right-3 p-1.5 rounded-md transition-all duration-150 cursor-pointer text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60"
+      className="p-1.5 rounded-md transition-all duration-150 cursor-pointer text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60"
     >
       {copied ? (
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -86,11 +86,12 @@ function CodeBlock({
     const isDark = resolvedTheme === "dark";
     return (
       <div className="relative my-6 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-800">
-        {/* Badge del lenguaje */}
-        <div className="px-4 py-1.5 text-[11px] font-mono font-medium text-neutral-400 dark:text-neutral-500 bg-neutral-50 dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800 select-none">
-          {rawLang}
+        {/* Header: lenguaje + copiar */}
+        <div className="flex items-center justify-between px-4 py-1.5 bg-neutral-50 dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+          <span className="text-[11px] font-mono font-medium text-neutral-400 dark:text-neutral-500 select-none">{rawLang}</span>
+          <CopyButton text={codeString} />
         </div>
-        <div className="relative">
+        <div>
           <SyntaxHighlighter
             language={lang}
             style={isDark ? oneDark : oneLight}
@@ -113,7 +114,6 @@ function CodeBlock({
           >
             {codeString}
           </SyntaxHighlighter>
-          <CopyButton text={codeString} />
         </div>
       </div>
     );
@@ -123,11 +123,14 @@ function CodeBlock({
   const isBlock = codeString.includes("\n");
   if (isBlock) {
     return (
-      <div className="relative my-6">
-        <pre className="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 p-4 text-sm font-mono text-neutral-800 dark:text-neutral-200 leading-relaxed">
+      <div className="my-6 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-800">
+        <div className="flex items-center justify-between px-4 py-1.5 bg-neutral-50 dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+          <span className="text-[11px] font-mono font-medium text-neutral-400 dark:text-neutral-500 select-none">code</span>
+          <CopyButton text={codeString} />
+        </div>
+        <pre className="overflow-x-auto bg-neutral-50 dark:bg-neutral-950 p-4 text-sm font-mono text-neutral-800 dark:text-neutral-200 leading-relaxed">
           <code>{children}</code>
         </pre>
-        <CopyButton text={codeString} />
       </div>
     );
   }
