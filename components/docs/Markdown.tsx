@@ -245,6 +245,11 @@ export default function Markdown({ content, className }: MarkdownProps) {
         components={{
           pre: TransparentPre,
           code: CodeBlock,
+          table: ({ children }) => (
+            <div className="overflow-x-auto w-full my-6 rounded-lg border border-neutral-200 dark:border-neutral-700">
+              <table className="min-w-full">{children}</table>
+            </div>
+          ),
         }}
       >
         {content}
