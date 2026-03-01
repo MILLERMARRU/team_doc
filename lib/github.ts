@@ -117,3 +117,27 @@ export async function getFileSha(path: string): Promise<string | null> {
     throw err;
   }
 }
+
+// ── Subir archivo binario como Base64 (imágenes) ─────────────────────────────
+
+export async function upsertBinaryFile(
+  path: string,
+  base64Content: string,
+  commitMessage: string
+): Promise<void> {
+  const octokit = getOctokit();
+  const { owner, repo, branch } = getRepoConfig();
+
+  // Si ya existe, necesitamos el SHA para actualizarlo
+  const sha = await getFileSha(path);
+
+  await octokit.repos.createOrUpdateFileContents({
+    owner,
+    repo,
+    path,
+    message: commitMessage,
+    content: base64Content,
+    branch,
+    ...(sha ? { sha } : {}),
+  });
+}
