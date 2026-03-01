@@ -23,9 +23,8 @@ import {
   LogOut,
   ImageIcon,
 } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
+import Markdown from "@/components/docs/Markdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -529,9 +528,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
               {preview ? (
                 <div className="flex-1 rounded-lg border border-border bg-card p-4 overflow-y-auto" style={{ minHeight: 520 }}>
                   {content ? (
-                    <div className="prose dark:prose-invert max-w-none text-sm">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-                    </div>
+                    <Markdown content={content} className="text-sm" />
                   ) : (
                     <p className="text-sm text-muted-foreground italic">Sin contenido todavía…</p>
                   )}
