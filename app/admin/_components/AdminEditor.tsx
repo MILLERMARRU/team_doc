@@ -169,6 +169,20 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
     await uploadImageFile(file);
   }
 
+  // ── Ctrl+V / Cmd+V con imagen en el portapapeles ─────────
+  async function handlePaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const items     = Array.from(e.clipboardData.items);
+    const imageItem = items.find((item) => item.type.startsWith("image/"));
+
+    // Si no hay imagen en el portapapeles, dejar que el texto se pegue normal
+    if (!imageItem) return;
+
+    // Hay imagen → evitar que se pegue basura de texto
+    e.preventDefault();
+    const file = imageItem.getAsFile();
+    if (file) await uploadImageFile(file);
+  }
+
   // Cargar .md desde archivo local
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -489,6 +503,29 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
                 </div>
               </div>
 
+              {/* ── Hint imágenes ──────────────────────────── */}
+              {!preview && (
+                <div className="flex items-center gap-2 rounded-md border border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 px-3 py-2 text-xs text-neutral-500 dark:text-neutral-400">
+                  <ImageIcon className="h-3.5 w-3.5 shrink-0 text-neutral-400 dark:text-neutral-500" />
+                  <span>
+                    Para insertar imágenes o capturas:{" "}
+                    <kbd className="rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-1 py-0.5 font-mono text-[11px] text-neutral-600 dark:text-neutral-300">
+                      Ctrl+V
+                    </kbd>
+                    {" "}con la captura en el portapapeles, o usa el botón{" "}
+                    <button
+                      type="button"
+                      onClick={() => imageRef.current?.click()}
+                      className="underline underline-offset-2 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer"
+                    >
+                      Subir imagen
+                    </button>
+                    .
+                  </span>
+                </div>
+              )}
+
+              {/* ── Editor / Preview ──────────────────────── */}
               {preview ? (
                 <div className="flex-1 rounded-lg border border-border bg-card p-4 overflow-y-auto" style={{ minHeight: 520 }}>
                   {content ? (
@@ -504,6 +541,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
                   ref={textareaRef}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
+                  onPaste={handlePaste}
                   required
                   placeholder={`# Título del documento\n\nEscribe o pega tu Markdown aquí…\n\n## Sección\n\nContenido...`}
                   className="flex-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring transition-colors resize-none"
@@ -515,7 +553,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
                 <Info className="h-3.5 w-3.5 shrink-0" />
                 {content
                   ? `${content.length.toLocaleString()} caracteres · ${(new Blob([content]).size / 1024).toFixed(1)} KB`
-                  : "Pega o escribe Markdown, o carga un archivo .md"}
+                  : "Escribe Markdown, carga un .md, sube una imagen o pega una captura con Ctrl+V"}
               </div>
             </div>
           </div>
