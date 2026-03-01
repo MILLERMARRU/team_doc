@@ -15,6 +15,7 @@ import { useTheme } from "next-themes";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark, oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import type { ComponentPropsWithoutRef } from "react";
+import { MermaidBlock } from "@/components/docs/MermaidBlock";
 
 // ── Botón de copiar ───────────────────────────────────────
 function CopyButton({ text }: { text: string }) {
@@ -80,6 +81,11 @@ function CodeBlock({
   const rawLang = match?.[1] ?? "";
   const lang = LANG_ALIASES[rawLang] ?? rawLang;
   const codeString = String(children).replace(/\n$/, "");
+
+  // Diagrama Mermaid
+  if (rawLang === "mermaid") {
+    return <MermaidBlock code={codeString} />;
+  }
 
   // Bloque con lenguaje → syntax highlighting
   if (match) {
