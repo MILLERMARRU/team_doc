@@ -94,3 +94,26 @@ export async function getRawPublicFile(path: string): Promise<string | null> {
   if (!res.ok) return null;
   return res.text();
 }
+
+// ── Obtener solo el SHA de un archivo (para updates de binarios) ─────────────
+
+export async function getFileSha(path: string): Promise<string | null> {
+  try {
+    const octokit = getOctokit();
+    const { owner, repo, branch } = getRepoConfig();
+
+    const response = await octokit.repos.getContent({
+      owner,
+      repo,
+      path,
+      ref: branch,
+    });
+
+    const data = response.data;
+    if (Array.isArray(data) || data.type !== "file") return null;
+    return data.sha;
+  } catch (err: unknown) {
+    if ((err as { status?: number }).status === 404) return null;
+    throw err;
+  }
+}
