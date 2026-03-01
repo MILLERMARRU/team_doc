@@ -141,3 +141,15 @@ export async function upsertBinaryFile(
     ...(sha ? { sha } : {}),
   });
 }
+
+// ── Construir URL pública raw.githubusercontent.com ──────────────────────────
+
+export function buildRawUrl(path: string): string {
+  const owner = process.env.GITHUB_OWNER;
+  const repo = process.env.GITHUB_REPO;
+  const branch = process.env.GITHUB_BRANCH ?? "main";
+  if (!owner || !repo) {
+    throw new Error("GITHUB_OWNER y GITHUB_REPO deben estar definidos en .env.local");
+  }
+  return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+}
