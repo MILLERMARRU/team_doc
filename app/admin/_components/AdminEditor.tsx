@@ -21,6 +21,7 @@ import {
   ListOrdered,
   FileCode,
   LogOut,
+  ImageIcon,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -44,8 +45,10 @@ interface AdminEditorProps {
 }
 
 export default function AdminEditor({ username, index }: AdminEditorProps) {
-  const router = useRouter();
-  const fileRef = useRef<HTMLInputElement>(null);
+  const router      = useRouter();
+  const fileRef     = useRef<HTMLInputElement>(null);
+  const imageRef    = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Campos del formulario
   const [title, setTitle] = useState("");
@@ -58,8 +61,9 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
   const [order, setOrder] = useState("1");
 
   // UI
-  const [preview, setPreview] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [preview, setPreview]           = useState(false);
+  const [loading, setLoading]           = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const existingSections = index.sections.map((s) => s.title);
   const activeSection = section === "__new__" ? customSection : section;
@@ -77,6 +81,92 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
         .replace(/-+/g, "-");
       setSlug(auto);
     }
+  }
+
+  // ── Insertar texto en la posición del cursor ─────────────
+  function insertAtCursor(text: string) {
+    const ta = textareaRef.current;
+    if (!ta) {
+      setContent((c) => c + text);
+      return;
+    }
+    const start = ta.selectionStart ?? content.length;
+    const end   = ta.selectionEnd   ?? content.length;
+    const newContent = content.slice(0, start) + text + content.slice(end);
+    setContent(newContent);
+    requestAnimationFrame(() => {
+      ta.selectionStart = start + text.length;
+      ta.selectionEnd   = start + text.length;
+      ta.focus();
+    });
+  }
+
+  // ── Lógica común de subida de imagen ─────────────────────
+  async function uploadImageFile(file: File) {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Imagen demasiado grande", {
+        description: "El archivo supera el límite de 5 MB.",
+      });
+      return;
+    }
+
+    const ext     = file.type.split("/")[1]?.replace("jpeg", "jpg") ?? "png";
+    const rawName =
+      file.name && file.name !== "image.png"
+        ? file.name
+        : `screenshot-${Date.now()}.${ext}`;
+
+    setUploadingImage(true);
+    const toastId = toast.loading("Subiendo imagen a GitHub…");
+
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const dataUrl = ev.target?.result as string;
+        const base64  = dataUrl.split(",")[1];
+
+        const res = await fetch("/api/docs/upload-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: rawName, base64 }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          toast.error("No se pudo subir la imagen", {
+            id: toastId,
+            description: data.error ?? "Error desconocido.",
+          });
+          return;
+        }
+
+        const altText  = rawName.replace(/\.[^.]+$/, "");
+        const markdown = `![${altText}](${data.url})`;
+        insertAtCursor(markdown);
+
+        toast.success("Imagen subida", {
+          id: toastId,
+          description: "Insertada en el documento como Markdown.",
+        });
+      } catch {
+        toast.error("Error de conexión", {
+          id: toastId,
+          description: "No se pudo conectar con el servidor.",
+        });
+      } finally {
+        setUploadingImage(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── Botón "Subir imagen" → selector de archivos ──────────
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    await uploadImageFile(file);
   }
 
   // Cargar .md desde archivo local
@@ -343,6 +433,29 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
                   <span className="text-destructive ml-0.5">*</span>
                 </Label>
                 <div className="flex items-center gap-1">
+                  {/* Botón subir imagen */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => imageRef.current?.click()}
+                    disabled={uploadingImage}
+                    className="h-7 gap-1.5 text-xs text-muted-foreground cursor-pointer"
+                  >
+                    {uploadingImage ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <ImageIcon className="h-3.5 w-3.5" />
+                    )}
+                    Subir imagen
+                  </Button>
+                  <input
+                    ref={imageRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/svg+xml"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
                   <Button
                     type="button"
                     variant="ghost"
@@ -388,6 +501,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
                 </div>
               ) : (
                 <textarea
+                  ref={textareaRef}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   required
