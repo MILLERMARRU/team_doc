@@ -331,7 +331,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
             <p className="text-sm text-muted-foreground mt-0.5">
               Hola,{" "}
               <strong className="text-foreground">{username}</strong>
-              {" "}— Publica y gestiona tu documentación en GitHub
+              <span className="hidden sm:inline">{" "}— Publica y gestiona tu documentación en GitHub</span>
             </p>
           </div>
           <button
@@ -345,11 +345,11 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
         </div>
 
         {/* ── Tabs de navegación ── */}
-        <div className="flex items-center gap-1 p-1 bg-muted rounded-xl mb-8 w-fit">
+        <div className="flex items-center gap-1 p-1 bg-muted rounded-xl mb-8 w-full sm:w-fit">
           <button
             type="button"
             onClick={() => setView("new")}
-            className={`cursor-pointer flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            className={`cursor-pointer flex flex-1 sm:flex-initial items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
               view === "new"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -367,7 +367,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
               setView("browser");
               setEditingItem(null);
             }}
-            className={`cursor-pointer flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            className={`cursor-pointer flex flex-1 sm:flex-initial items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
               view === "browser"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -549,13 +549,13 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
 
             {/* ── Columna derecha (60%) — Editor Markdown ── */}
             <div className="flex flex-col space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <Label className="flex items-center gap-1.5">
                   <FileCode className="h-3.5 w-3.5 text-muted-foreground" />
                   Contenido Markdown{" "}
                   <span className="text-destructive ml-0.5">*</span>
                 </Label>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 flex-wrap">
                   <Button
                     type="button"
                     variant="ghost"
@@ -633,7 +633,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
               )}
 
               {preview ? (
-                <div className="flex-1 rounded-lg border border-border bg-card p-4 overflow-y-auto" style={{ minHeight: 520 }}>
+                <div className="flex-1 rounded-lg border border-border bg-card p-4 overflow-y-auto min-h-[300px] sm:min-h-[520px]">
                   {content ? (
                     <Markdown content={content} className="text-sm" />
                   ) : (
@@ -648,8 +648,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
                   onPaste={handlePaste}
                   required
                   placeholder={`# Título del documento\n\nEscribe o pega tu Markdown aquí…\n\n## Sección\n\nContenido...`}
-                  className="flex-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring transition-colors resize-none"
-                  style={{ minHeight: 520 }}
+                  className="flex-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring transition-colors resize-none min-h-[300px] sm:min-h-[520px]"
                 />
               )}
 
@@ -663,13 +662,13 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
           </div>
 
           {/* Submit */}
-          <div className="flex items-center justify-end gap-4 pt-4 border-t border-border">
-            <p className="text-xs text-muted-foreground">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-4 border-t border-border">
+            <p className="text-xs text-muted-foreground text-center sm:text-left">
               {editingItem
                 ? "Se guardará y actualizará en GitHub al instante."
                 : "Se guardará en GitHub y será visible de inmediato."}
             </p>
-            <Button type="submit" disabled={loading} className="gap-2 cursor-pointer disabled:cursor-not-allowed">
+            <Button type="submit" disabled={loading} className="w-full sm:w-auto gap-2 cursor-pointer disabled:cursor-not-allowed">
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
