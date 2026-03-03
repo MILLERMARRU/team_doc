@@ -164,6 +164,36 @@ export async function deleteFile(
   });
 }
 
+// ── Listar archivos de un directorio del repo ─────────────────────────────────
+
+export async function listDirectory(
+  dirPath: string
+): Promise<{ name: string; path: string; type: "file" | "dir" }[]> {
+  try {
+    const octokit = getOctokit();
+    const { owner, repo, branch } = getRepoConfig();
+
+    const response = await octokit.repos.getContent({
+      owner,
+      repo,
+      path: dirPath,
+      ref: branch,
+    });
+
+    const data = response.data;
+    if (!Array.isArray(data)) return [];
+
+    return data.map((entry) => ({
+      name: entry.name,
+      path: entry.path,
+      type: entry.type as "file" | "dir",
+    }));
+  } catch (err: unknown) {
+    if ((err as { status?: number }).status === 404) return [];
+    throw err;
+  }
+}
+
 // ── Construir URL pública raw.githubusercontent.com ──────────────────────────
 
 export function buildRawUrl(path: string): string {
