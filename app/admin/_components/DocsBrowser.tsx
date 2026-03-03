@@ -166,7 +166,7 @@ export default function DocsBrowser({ index, onEditRequest }: DocsBrowserProps) 
                           </div>
                           {item.description && <p className="text-xs text-muted-foreground/70 truncate">{item.description}</p>}
                         </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">
+                        <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">
                           <Button type="button" size="icon" variant="ghost" className="h-7 w-7 cursor-pointer" title="Editar documento" disabled={!!loadingEdit || !!loadingDelete} onClick={() => handleEdit(item)}>
                             {loadingEdit === item.slug ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Pencil className="h-3.5 w-3.5" />}
                           </Button>
@@ -176,10 +176,12 @@ export default function DocsBrowser({ index, onEditRequest }: DocsBrowserProps) 
                         </div>
                       </div>
                       {confirmDelete === item.slug && (
-                        <div className="flex items-center gap-3 px-4 py-2.5 bg-destructive/5 border-t border-destructive/20">
-                          <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
-                          <p className="text-xs text-destructive flex-1">¿Eliminar <strong>{item.title}</strong>? Esta acción no se puede deshacer.</p>
-                          <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 px-4 py-3 bg-destructive/5 border-t border-destructive/20">
+                          <div className="flex items-start gap-2 flex-1 min-w-0">
+                            <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />
+                            <p className="text-xs text-destructive">¿Eliminar <strong>{item.title}</strong>? Esta acción no se puede deshacer.</p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                             <Button type="button" size="sm" variant="ghost" className="h-6 px-2 text-xs cursor-pointer" onClick={() => setConfirmDelete(null)} disabled={!!loadingDelete}>Cancelar</Button>
                             <Button type="button" size="sm" variant="destructive" className="h-6 px-2 text-xs cursor-pointer" onClick={() => handleDelete(item.slug)} disabled={!!loadingDelete}>
                               {loadingDelete === item.slug ? <Loader2 className="h-3 w-3 animate-spin" /> : "Eliminar"}
