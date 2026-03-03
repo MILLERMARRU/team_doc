@@ -142,6 +142,28 @@ export async function upsertBinaryFile(
   });
 }
 
+// ── Eliminar un archivo del repo ─────────────────────────────────────────────
+
+export async function deleteFile(
+  path: string,
+  commitMessage: string
+): Promise<void> {
+  const octokit = getOctokit();
+  const { owner, repo, branch } = getRepoConfig();
+
+  const sha = await getFileSha(path);
+  if (!sha) throw new Error(`Archivo no encontrado en el repo: ${path}`);
+
+  await octokit.repos.deleteFile({
+    owner,
+    repo,
+    path,
+    message: commitMessage,
+    sha,
+    branch,
+  });
+}
+
 // ── Construir URL pública raw.githubusercontent.com ──────────────────────────
 
 export function buildRawUrl(path: string): string {
