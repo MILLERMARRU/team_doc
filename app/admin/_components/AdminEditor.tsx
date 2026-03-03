@@ -24,6 +24,8 @@ import {
   ImageIcon,
   FilePlus,
   LayoutList,
+  Pencil,
+  X,
 } from "lucide-react";
 import DocsBrowser from "./DocsBrowser";
 import { toast } from "sonner";
@@ -38,7 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { DocsIndex } from "@/types";
+import type { DocsIndex, DocItem } from "@/types";
 
 // ── Componente principal ─────────────────────────────────────
 interface AdminEditorProps {
@@ -69,6 +71,8 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
 
   // ── Vista activa: editor o explorador ───────────────────
   const [view, setView] = useState<"new" | "browser">("new");
+  // Ítem que se está editando (null = documento nuevo)
+  const [editingItem, setEditingItem] = useState<DocItem | null>(null);
 
   const totalDocs = index.sections.reduce((a, s) => a + s.items.length, 0);
 
@@ -209,6 +213,40 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
     reader.readAsText(file);
   }
 
+  // ── Cargar datos de un ítem en el formulario para editar ──
+  function startEdit(item: DocItem, content: string) {
+    const foundSection = index.sections.find((s) =>
+      s.items.some((i) => i.slug === item.slug)
+    );
+    const slugParts = item.slug.split("/");
+    const shortSlug = slugParts[slugParts.length - 1];
+
+    setTitle(item.title);
+    setSection(foundSection?.title ?? "");
+    setCustomSection("");
+    setSlug(shortSlug);
+    setContent(content);
+    setTags(item.tags?.join(", ") ?? "");
+    setDescription(item.description ?? "");
+    setOrder(String(item.order));
+    setEditingItem(item);
+    setView("new");
+    setPreview(false);
+  }
+
+  // ── Limpiar formulario y salir del modo edición ──────────
+  function clearEdit() {
+    setTitle("");
+    setSection("");
+    setCustomSection("");
+    setSlug("");
+    setContent("");
+    setTags("");
+    setDescription("");
+    setOrder("1");
+    setEditingItem(null);
+  }
+
   // Cerrar sesión
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -257,7 +295,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
         return;
       }
 
-      toast.success("Documento publicado", {
+      toast.success(editingItem ? "Documento actualizado" : "Documento publicado", {
         id: toastId,
         description: `Disponible en /docs/${data.slug}`,
       });
@@ -270,6 +308,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
       setTags("");
       setDescription("");
       setOrder("1");
+      setEditingItem(null);
 
       router.refresh();
     } catch {
@@ -317,11 +356,17 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
             }`}
           >
             <FilePlus className="h-3.5 w-3.5" />
-            Nuevo documento
+            {editingItem ? "Editando" : "Nuevo documento"}
+            {editingItem && (
+              <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-primary inline-block" />
+            )}
           </button>
           <button
             type="button"
-            onClick={() => setView("browser")}
+            onClick={() => {
+              setView("browser");
+              setEditingItem(null);
+            }}
             className={`cursor-pointer flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
               view === "browser"
                 ? "bg-background text-foreground shadow-sm"
@@ -340,12 +385,32 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
 
         {/* ── Vista: Explorador de documentos ── */}
         {view === "browser" && (
-          <DocsBrowser index={index} onEditRequest={() => {}} />
+          <DocsBrowser index={index} onEditRequest={startEdit} />
         )}
 
         {/* ── Vista: Formulario editor ── */}
         {view === "new" && (
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Banner modo edición */}
+          {editingItem && (
+            <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-2.5">
+              <Pencil className="h-4 w-4 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">Editando documento existente</p>
+                <p className="text-xs text-muted-foreground font-mono truncate">
+                  /docs/{editingItem.slug}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={clearEdit}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" />
+                Nuevo doc
+              </button>
+            </div>
+          )}
           {/* Grid 40 / 60 */}
           <div className="grid gap-6 md:grid-cols-[40%_60%]">
 
@@ -600,7 +665,9 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
           {/* Submit */}
           <div className="flex items-center justify-end gap-4 pt-4 border-t border-border">
             <p className="text-xs text-muted-foreground">
-              Se guardará en GitHub y será visible de inmediato.
+              {editingItem
+                ? "Se guardará y actualizará en GitHub al instante."
+                : "Se guardará en GitHub y será visible de inmediato."}
             </p>
             <Button type="submit" disabled={loading} className="gap-2 cursor-pointer disabled:cursor-not-allowed">
               {loading ? (
@@ -608,7 +675,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              Publicar documento
+              {editingItem ? "Actualizar documento" : "Publicar documento"}
             </Button>
           </div>
         </form>
