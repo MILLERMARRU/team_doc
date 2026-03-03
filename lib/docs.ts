@@ -147,3 +147,18 @@ export function extractToc(markdown: string): TocItem[] {
 export function slugToPath(slug: string): string {
   return `docs/${slug}.md`;
 }
+
+// ── Eliminar un ítem del index.json ───────────────────────────
+
+export async function deleteIndexItem(slug: string): Promise<DocsIndex> {
+  const index = await getDocsIndex();
+
+  for (const section of index.sections) {
+    section.items = section.items.filter((i) => i.slug !== slug);
+  }
+
+  // Eliminar secciones vacías
+  index.sections = index.sections.filter((s) => s.items.length > 0);
+
+  return index;
+}

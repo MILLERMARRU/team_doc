@@ -22,7 +22,12 @@ import {
   FileCode,
   LogOut,
   ImageIcon,
+  FilePlus,
+  LayoutList,
+  Pencil,
+  X,
 } from "lucide-react";
+import DocsBrowser from "./DocsBrowser";
 import { toast } from "sonner";
 import Markdown from "@/components/docs/Markdown";
 import { Button } from "@/components/ui/button";
@@ -35,7 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { DocsIndex } from "@/types";
+import type { DocsIndex, DocItem } from "@/types";
 
 // ── Componente principal ─────────────────────────────────────
 interface AdminEditorProps {
@@ -60,9 +65,16 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
   const [order, setOrder] = useState("1");
 
   // UI
-  const [preview, setPreview]           = useState(false);
-  const [loading, setLoading]           = useState(false);
+  const [preview, setPreview]               = useState(false);
+  const [loading, setLoading]               = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  // ── Vista activa: editor o explorador ───────────────────
+  const [view, setView] = useState<"new" | "browser">("new");
+  // Ítem que se está editando (null = documento nuevo)
+  const [editingItem, setEditingItem] = useState<DocItem | null>(null);
+
+  const totalDocs = index.sections.reduce((a, s) => a + s.items.length, 0);
 
   const existingSections = index.sections.map((s) => s.title);
   const activeSection = section === "__new__" ? customSection : section;
@@ -173,10 +185,8 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
     const items     = Array.from(e.clipboardData.items);
     const imageItem = items.find((item) => item.type.startsWith("image/"));
 
-    // Si no hay imagen en el portapapeles, dejar que el texto se pegue normal
     if (!imageItem) return;
 
-    // Hay imagen → evitar que se pegue basura de texto
     e.preventDefault();
     const file = imageItem.getAsFile();
     if (file) await uploadImageFile(file);
@@ -188,7 +198,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
       toast.error("Archivo demasiado grande", {
-        description: "El archivo supera el límite de 2 MB permitido.",
+        description: "El archivo supera el límite de 2 MB permitido.",
       });
       return;
     }
@@ -201,6 +211,40 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
       });
     };
     reader.readAsText(file);
+  }
+
+  // ── Cargar datos de un ítem en el formulario para editar ──
+  function startEdit(item: DocItem, content: string) {
+    const foundSection = index.sections.find((s) =>
+      s.items.some((i) => i.slug === item.slug)
+    );
+    const slugParts = item.slug.split("/");
+    const shortSlug = slugParts[slugParts.length - 1];
+
+    setTitle(item.title);
+    setSection(foundSection?.title ?? "");
+    setCustomSection("");
+    setSlug(shortSlug);
+    setContent(content);
+    setTags(item.tags?.join(", ") ?? "");
+    setDescription(item.description ?? "");
+    setOrder(String(item.order));
+    setEditingItem(item);
+    setView("new");
+    setPreview(false);
+  }
+
+  // ── Limpiar formulario y salir del modo edición ──────────
+  function clearEdit() {
+    setTitle("");
+    setSection("");
+    setCustomSection("");
+    setSlug("");
+    setContent("");
+    setTags("");
+    setDescription("");
+    setOrder("1");
+    setEditingItem(null);
   }
 
   // Cerrar sesión
@@ -251,12 +295,11 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
         return;
       }
 
-      toast.success("Documento publicado", {
+      toast.success(editingItem ? "Documento actualizado" : "Documento publicado", {
         id: toastId,
         description: `Disponible en /docs/${data.slug}`,
       });
 
-      // Limpiar formulario
       setTitle("");
       setSection("");
       setCustomSection("");
@@ -265,6 +308,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
       setTags("");
       setDescription("");
       setOrder("1");
+      setEditingItem(null);
 
       router.refresh();
     } catch {
@@ -280,14 +324,14 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold">Panel Admin</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               Hola,{" "}
               <strong className="text-foreground">{username}</strong>
-              {" "}— Publica documentación directamente en GitHub
+              {" "}— Publica y gestiona tu documentación en GitHub
             </p>
           </div>
           <button
@@ -300,7 +344,73 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
           </button>
         </div>
 
+        {/* ── Tabs de navegación ── */}
+        <div className="flex items-center gap-1 p-1 bg-muted rounded-xl mb-8 w-fit">
+          <button
+            type="button"
+            onClick={() => setView("new")}
+            className={`cursor-pointer flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              view === "new"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <FilePlus className="h-3.5 w-3.5" />
+            {editingItem ? "Editando" : "Nuevo documento"}
+            {editingItem && (
+              <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-primary inline-block" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setView("browser");
+              setEditingItem(null);
+            }}
+            className={`cursor-pointer flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              view === "browser"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <LayoutList className="h-3.5 w-3.5" />
+            Mis documentos
+            {totalDocs > 0 && (
+              <span className="ml-0.5 text-[11px] bg-muted-foreground/20 text-muted-foreground px-1.5 py-0 rounded-full">
+                {totalDocs}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* ── Vista: Explorador de documentos ── */}
+        {view === "browser" && (
+          <DocsBrowser index={index} onEditRequest={startEdit} />
+        )}
+
+        {/* ── Vista: Formulario editor ── */}
+        {view === "new" && (
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Banner modo edición */}
+          {editingItem && (
+            <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-2.5">
+              <Pencil className="h-4 w-4 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">Editando documento existente</p>
+                <p className="text-xs text-muted-foreground font-mono truncate">
+                  /docs/{editingItem.slug}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={clearEdit}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" />
+                Nuevo doc
+              </button>
+            </div>
+          )}
           {/* Grid 40 / 60 */}
           <div className="grid gap-6 md:grid-cols-[40%_60%]">
 
@@ -446,7 +556,6 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
                   <span className="text-destructive ml-0.5">*</span>
                 </Label>
                 <div className="flex items-center gap-1">
-                  {/* Botón subir imagen */}
                   <Button
                     type="button"
                     variant="ghost"
@@ -502,7 +611,6 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
                 </div>
               </div>
 
-              {/* ── Hint imágenes ──────────────────────────── */}
               {!preview && (
                 <div className="flex items-center gap-2 rounded-md border border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 px-3 py-2 text-xs text-neutral-500 dark:text-neutral-400">
                   <ImageIcon className="h-3.5 w-3.5 shrink-0 text-neutral-400 dark:text-neutral-500" />
@@ -524,7 +632,6 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
                 </div>
               )}
 
-              {/* ── Editor / Preview ──────────────────────── */}
               {preview ? (
                 <div className="flex-1 rounded-lg border border-border bg-card p-4 overflow-y-auto" style={{ minHeight: 520 }}>
                   {content ? (
@@ -558,7 +665,9 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
           {/* Submit */}
           <div className="flex items-center justify-end gap-4 pt-4 border-t border-border">
             <p className="text-xs text-muted-foreground">
-              Se guardará en GitHub y será visible de inmediato.
+              {editingItem
+                ? "Se guardará y actualizará en GitHub al instante."
+                : "Se guardará en GitHub y será visible de inmediato."}
             </p>
             <Button type="submit" disabled={loading} className="gap-2 cursor-pointer disabled:cursor-not-allowed">
               {loading ? (
@@ -566,10 +675,11 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              Publicar documento
+              {editingItem ? "Actualizar documento" : "Publicar documento"}
             </Button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );
