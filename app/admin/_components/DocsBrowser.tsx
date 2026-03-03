@@ -5,11 +5,14 @@
 // ============================================================
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search, X, FileSearch, FolderOpen, FileText,
-  ChevronDown, ChevronRight, Hash, Tag,
+  ChevronDown, ChevronRight, Hash, Tag, Pencil, Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import type { DocsIndex, DocItem } from "@/types";
 
 interface DocsBrowserProps {
@@ -17,11 +20,13 @@ interface DocsBrowserProps {
   onEditRequest: (item: DocItem, content: string) => void;
 }
 
-export default function DocsBrowser({ index, onEditRequest: _onEditRequest }: DocsBrowserProps) {
+export default function DocsBrowser({ index, onEditRequest }: DocsBrowserProps) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [openSections, setOpenSections] = useState<Set<string>>(
     () => new Set(index.sections.map((s) => s.title))
   );
+  const [loadingEdit, setLoadingEdit] = useState<string | null>(null);
 
   const lowerSearch = search.toLowerCase().trim();
   const filteredSections = index.sections
@@ -47,6 +52,22 @@ export default function DocsBrowser({ index, onEditRequest: _onEditRequest }: Do
       if (next.has(title)) next.delete(title); else next.add(title);
       return next;
     });
+  }
+
+  async function handleEdit(item: DocItem) {
+    if (loadingEdit) return;
+    setLoadingEdit(item.slug);
+    try {
+      const path = `docs/${item.slug}.md`;
+      const res = await fetch(`/api/docs/file?path=${encodeURIComponent(path)}`);
+      if (!res.ok) throw new Error("No se pudo cargar el documento.");
+      const data = await res.json();
+      onEditRequest(item, data.content);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al cargar el documento.");
+    } finally {
+      setLoadingEdit(null);
+    }
   }
 
   return (
@@ -94,7 +115,7 @@ export default function DocsBrowser({ index, onEditRequest: _onEditRequest }: Do
               {isOpen && (
                 <div className="border-t border-border divide-y divide-border/60">
                   {section.items.map((item) => (
-                    <div key={item.slug} className="flex items-start gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
+                    <div key={item.slug} className="group flex items-start gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
                       <FileText className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0 space-y-1">
                         <p className="text-sm font-medium leading-snug truncate">{item.title}</p>
@@ -114,6 +135,11 @@ export default function DocsBrowser({ index, onEditRequest: _onEditRequest }: Do
                         </div>
                         {item.description && <p className="text-xs text-muted-foreground/70 truncate">{item.description}</p>}
                       </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">
+                        <Button type="button" size="icon" variant="ghost" className="h-7 w-7 cursor-pointer" title="Editar documento" disabled={!!loadingEdit} onClick={() => handleEdit(item)}>
+                          {loadingEdit === item.slug ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Pencil className="h-3.5 w-3.5" />}
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -122,6 +148,7 @@ export default function DocsBrowser({ index, onEditRequest: _onEditRequest }: Do
           );
         })}
       </div>
+      <div className="hidden">{router && null}</div>
     </div>
   );
 }
