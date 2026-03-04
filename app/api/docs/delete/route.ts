@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { deleteFile, getFileContent, upsertFile } from "@/lib/github";
-import { deleteIndexItem, slugToPath } from "@/lib/docs";
+import { deleteIndexItem, getDocsIndex, findItemBySlug, slugToPath } from "@/lib/docs";
 
 // ── Extrae rutas de imágenes del repo desde un .md ──────────
 // Busca tanto Markdown ![alt](url) como etiquetas <img src="url">
@@ -78,9 +78,20 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
+    // ── 3. Verificar propiedad antes de borrar ─────────────
+    const currentIndex = await getDocsIndex();
+    const targetItem = findItemBySlug(currentIndex, slug);
+
+    if (targetItem && targetItem.createdBy && targetItem.createdBy !== session.username) {
+      return NextResponse.json(
+        { error: "No tienes permiso para eliminar este documento" },
+        { status: 403 }
+      );
+    }
+
     const path = slugToPath(slug);
 
-    // ── 3. Leer el contenido del .md antes de borrarlo ─────
+    // ── 4. Leer el contenido del .md antes de borrarlo ─────
     const file = await getFileContent(path);
     const imagePaths = file ? extractRepoImagePaths(file.content) : [];
 
