@@ -110,7 +110,7 @@ export default function DocsBrowser({ index, username, onEditRequest }: DocsBrow
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <span><strong className="text-foreground">{totalDocs}</strong> {totalDocs === 1 ? "documento" : "documentos"}</span>
           <span className="text-border">·</span>
-          <span><strong className="text-foreground">{index.sections.length}</strong> {index.sections.length === 1 ? "sección" : "secciones"}</span>
+          <span><strong className="text-foreground">{filteredSections.length}</strong> {filteredSections.length === 1 ? "sección" : "secciones"}</span>
         </div>
         <div className="relative flex-1 sm:max-w-xs ml-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
