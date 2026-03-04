@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { upsertFile } from "@/lib/github";
-import { upsertIndexItem, slugToPath } from "@/lib/docs";
+import { upsertIndexItem, slugToPath, getDocsIndex, findItemBySlug } from "@/lib/docs";
 import type { UpsertDocBody } from "@/types";
 
 const MAX_BYTES = 2 * 1024 * 1024; // 2 MB
