@@ -76,6 +76,12 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
 
   const totalDocs = index.sections.reduce((a, s) => a + s.items.length, 0);
 
+  // Solo contar los docs que pertenecen al usuario actual
+  const myDocsCount = index.sections.reduce(
+    (a, s) => a + s.items.filter((i) => !i.createdBy || i.createdBy === username).length,
+    0
+  );
+
   const existingSections = index.sections.map((s) => s.title);
   const activeSection = section === "__new__" ? customSection : section;
 
@@ -375,9 +381,9 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
           >
             <LayoutList className="h-3.5 w-3.5" />
             Mis documentos
-            {totalDocs > 0 && (
+            {myDocsCount > 0 && (
               <span className="ml-0.5 text-[11px] bg-muted-foreground/20 text-muted-foreground px-1.5 py-0 rounded-full">
-                {totalDocs}
+                {myDocsCount}
               </span>
             )}
           </button>
@@ -385,7 +391,7 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
 
         {/* ── Vista: Explorador de documentos ── */}
         {view === "browser" && (
-          <DocsBrowser index={index} onEditRequest={startEdit} />
+          <DocsBrowser index={index} username={username} onEditRequest={startEdit} />
         )}
 
         {/* ── Vista: Formulario editor ── */}

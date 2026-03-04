@@ -73,6 +73,7 @@ export async function upsertIndexItem(params: {
   order: number;
   tags?: string[];
   description?: string;
+  createdBy?: string;
 }): Promise<DocsIndex> {
   const index = await getDocsIndex();
 
@@ -93,6 +94,10 @@ export async function upsertIndexItem(params: {
   // Buscar o crear el ítem
   const existingIdx = section.items.findIndex((i) => i.slug === params.slug);
 
+  // Preservar el createdBy original si el ítem ya existe
+  const originalCreatedBy =
+    existingIdx >= 0 ? section.items[existingIdx].createdBy : params.createdBy;
+
   const newItem: import("@/types").DocItem = {
     title: params.title,
     slug: params.slug,
@@ -100,6 +105,7 @@ export async function upsertIndexItem(params: {
     order: params.order,
     tags: params.tags,
     description: params.description,
+    createdBy: originalCreatedBy,
   };
 
   if (existingIdx >= 0) {

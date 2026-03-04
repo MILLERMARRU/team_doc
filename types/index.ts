@@ -13,6 +13,8 @@ export interface DocItem {
   tags?: string[];
   /** Descripción corta opcional (para la búsqueda) */
   description?: string;
+  /** Usuario admin que creó el documento */
+  createdBy?: string;
 }
 
 /** Una sección del sidebar (agrupa DocItems) */

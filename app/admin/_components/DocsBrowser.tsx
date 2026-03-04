@@ -18,10 +18,11 @@ import type { DocsIndex, DocItem } from "@/types";
 
 interface DocsBrowserProps {
   index: DocsIndex;
+  username: string;
   onEditRequest: (item: DocItem, content: string) => void;
 }
 
-export default function DocsBrowser({ index, onEditRequest }: DocsBrowserProps) {
+export default function DocsBrowser({ index, username, onEditRequest }: DocsBrowserProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [openSections, setOpenSections] = useState<Set<string>>(
@@ -36,6 +37,9 @@ export default function DocsBrowser({ index, onEditRequest }: DocsBrowserProps) 
     .map((section) => ({
       ...section,
       items: section.items.filter((item) => {
+        // Solo mostrar docs del usuario actual (o sin dueño asignado = legado)
+        const isOwner = !item.createdBy || item.createdBy === username;
+        if (!isOwner) return false;
         if (!lowerSearch) return true;
         return (
           item.title.toLowerCase().includes(lowerSearch) ||
@@ -47,7 +51,7 @@ export default function DocsBrowser({ index, onEditRequest }: DocsBrowserProps) 
     }))
     .filter((s) => s.items.length > 0);
 
-  const totalDocs = index.sections.reduce((a, s) => a + s.items.length, 0);
+  const totalDocs = filteredSections.reduce((a, s) => a + s.items.length, 0);
 
   function toggleSection(title: string) {
     setOpenSections((prev) => {
