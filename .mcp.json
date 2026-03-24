@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "dochubs": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["tsx", "mcp/server.ts"],
+      "cwd": "D:/FREENLANCER/doct/docst"
+    }
+  }
+}
