@@ -2,9 +2,16 @@
   "mcpServers": {
     "dochubs": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["tsx", "mcp/server.ts"],
-      "cwd": "D:/FREENLANCER/doct/docst"
+      "command": "cmd",
+      "args": ["/c", "npx", "dochubs-mcp"],
+      "env": {
+        "GITHUB_TOKEN": "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",
+        "GITHUB_OWNER": "MILLERMARRU",
+        "GITHUB_REPO": "mi_docs",
+        "GITHUB_BRANCH": "main",
+        "SITE_URL": "https://dochubs.vercel.app",
+        "REVALIDATE_SECRET": "hola-bienvenido-este-es-mi-primer-mcp"
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "dochubs-mcp",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "MCP server for DocHubs – manage documentation from any AI assistant (Claude Code, Cursor, Gemini CLI, Windsurf, etc.)",
   "main": "dist/server.js",
   "bin": {
