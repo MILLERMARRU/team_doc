@@ -1,0 +1,45 @@
+{
+  "name": "dochubs-mcp",
+  "version": "1.0.3",
+  "description": "MCP server for DocHubs – manage documentation from any AI assistant (Claude Code, Cursor, Gemini CLI, Windsurf, etc.)",
+  "main": "dist/server.js",
+  "bin": {
+    "dochubs-mcp": "dist/server.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "dochubs",
+    "documentation",
+    "github",
+    "claude",
+    "cursor",
+    "ai"
+  ],
+  "author": "Millermarru <millemarru4@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@octokit/rest": "^22.0.1",
+    "dotenv": "^16.6.1"
+  },
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MILLERMARRU/team_doc"
+  }
+}
