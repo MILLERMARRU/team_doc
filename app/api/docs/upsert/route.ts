@@ -73,6 +73,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       order,
       tags,
       description,
+      createdBy: session.username,
     });
 
     await upsertFile(

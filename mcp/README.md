@@ -19,8 +19,6 @@ MCP server for [DocHubs](https://github.com/MILLERMARRU/team_doc) — manage you
 
 ## Configuration
 
-All tools require these environment variables:
-
 | Variable | Description | Required |
 |---|---|---|
 | `GITHUB_TOKEN` | GitHub PAT with `repo` scope — ask the author | Yes |
@@ -28,19 +26,19 @@ All tools require these environment variables:
 | `GITHUB_REPO` | `mi_docs` | Yes |
 | `GITHUB_BRANCH` | `main` | No (default: `main`) |
 | `SITE_URL` | `https://dochubs.vercel.app` | No |
-| `REVALIDATE_SECRET` | Secret token to trigger on-demand ISR revalidation — ask the author | No |
+| `REVALIDATE_SECRET` | Secret token for on-demand revalidation — ask the author | No |
 
 > `GITHUB_TOKEN` and `REVALIDATE_SECRET` are private — contact the author to get them.
 
 ### On-demand revalidation
 
-If `SITE_URL` and `REVALIDATE_SECRET` are set, the MCP will automatically call `/api/revalidate` on your site after every `create_doc`, `update_doc`, or `delete_doc` — making changes visible **instantly** without waiting for the ISR cache (default: 120s) to expire.
+If `SITE_URL` and `REVALIDATE_SECRET` are set, the MCP calls `/api/revalidate` after every write operation — docs appear on the site **instantly** without waiting for the ISR cache (120s) to expire.
 
 ---
 
 ## Windows note
 
-On **Windows**, `npx` requires a `cmd /c` wrapper. Use `"command": "cmd"` with `"/c"` as the first arg, as shown in the Windows configs below.
+On **Windows**, `npx` requires a `cmd /c` wrapper. Use `"command": "cmd"` with `"/c"` as the first arg, as shown below.
 
 On **macOS / Linux**, use `"command": "npx"` directly.
 
@@ -48,15 +46,15 @@ On **macOS / Linux**, use `"command": "npx"` directly.
 
 ## Claude Code
 
-### macOS / Linux — `~/.claude/settings.json` or `.mcp.json`
+### Windows — `.mcp.json` or `~/.claude/settings.json`
 
 ```json
 {
   "mcpServers": {
     "dochubs": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["dochubs-mcp"],
+      "command": "cmd",
+      "args": ["/c", "npx", "dochubs-mcp"],
       "env": {
         "GITHUB_TOKEN": "← pídelo al autor",
         "GITHUB_OWNER": "MILLERMARRU",
@@ -70,15 +68,15 @@ On **macOS / Linux**, use `"command": "npx"` directly.
 }
 ```
 
-### Windows — `~/.claude/settings.json` o `.mcp.json`
+### macOS / Linux — `.mcp.json` or `~/.claude/settings.json`
 
 ```json
 {
   "mcpServers": {
     "dochubs": {
       "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "dochubs-mcp"],
+      "command": "npx",
+      "args": ["dochubs-mcp"],
       "env": {
         "GITHUB_TOKEN": "← pídelo al autor",
         "GITHUB_OWNER": "MILLERMARRU",
@@ -96,14 +94,15 @@ On **macOS / Linux**, use `"command": "npx"` directly.
 
 ## Cursor
 
-### macOS / Linux — `~/.cursor/mcp.json` or `.cursor/mcp.json`
+### Windows — `.cursor/mcp.json`
 
 ```json
 {
   "mcpServers": {
     "dochubs": {
-      "command": "npx",
-      "args": ["dochubs-mcp"],
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "dochubs-mcp"],
       "env": {
         "GITHUB_TOKEN": "← pídelo al autor",
         "GITHUB_OWNER": "MILLERMARRU",
@@ -117,14 +116,15 @@ On **macOS / Linux**, use `"command": "npx"` directly.
 }
 ```
 
-### Windows
+### macOS / Linux — `~/.cursor/mcp.json`
 
 ```json
 {
   "mcpServers": {
     "dochubs": {
-      "command": "cmd",
-      "args": ["/c", "npx", "dochubs-mcp"],
+      "type": "stdio",
+      "command": "npx",
+      "args": ["dochubs-mcp"],
       "env": {
         "GITHUB_TOKEN": "← pídelo al autor",
         "GITHUB_OWNER": "MILLERMARRU",
@@ -142,14 +142,15 @@ On **macOS / Linux**, use `"command": "npx"` directly.
 
 ## Gemini CLI
 
-### macOS / Linux — `~/.gemini/settings.json`
+### Windows — `~/.gemini/settings.json`
 
 ```json
 {
   "mcpServers": {
     "dochubs": {
-      "command": "npx",
-      "args": ["dochubs-mcp"],
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "dochubs-mcp"],
       "env": {
         "GITHUB_TOKEN": "← pídelo al autor",
         "GITHUB_OWNER": "MILLERMARRU",
@@ -163,14 +164,15 @@ On **macOS / Linux**, use `"command": "npx"` directly.
 }
 ```
 
-### Windows
+### macOS / Linux — `~/.gemini/settings.json`
 
 ```json
 {
   "mcpServers": {
     "dochubs": {
-      "command": "cmd",
-      "args": ["/c", "npx", "dochubs-mcp"],
+      "type": "stdio",
+      "command": "npx",
+      "args": ["dochubs-mcp"],
       "env": {
         "GITHUB_TOKEN": "← pídelo al autor",
         "GITHUB_OWNER": "MILLERMARRU",
@@ -188,14 +190,15 @@ On **macOS / Linux**, use `"command": "npx"` directly.
 
 ## Windsurf
 
-### macOS / Linux — `~/.windsurf/mcp_config.json`
+### Windows — `~/.windsurf/mcp_config.json`
 
 ```json
 {
   "mcpServers": {
     "dochubs": {
-      "command": "npx",
-      "args": ["dochubs-mcp"],
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "dochubs-mcp"],
       "env": {
         "GITHUB_TOKEN": "← pídelo al autor",
         "GITHUB_OWNER": "MILLERMARRU",
@@ -209,14 +212,15 @@ On **macOS / Linux**, use `"command": "npx"` directly.
 }
 ```
 
-### Windows
+### macOS / Linux — `~/.windsurf/mcp_config.json`
 
 ```json
 {
   "mcpServers": {
     "dochubs": {
-      "command": "cmd",
-      "args": ["/c", "npx", "dochubs-mcp"],
+      "type": "stdio",
+      "command": "npx",
+      "args": ["dochubs-mcp"],
       "env": {
         "GITHUB_TOKEN": "← pídelo al autor",
         "GITHUB_OWNER": "MILLERMARRU",
@@ -234,14 +238,15 @@ On **macOS / Linux**, use `"command": "npx"` directly.
 
 ## Cline / Roo Code (VS Code)
 
-### macOS / Linux
+### Windows
 
 ```json
 {
   "mcpServers": {
     "dochubs": {
-      "command": "npx",
-      "args": ["dochubs-mcp"],
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "dochubs-mcp"],
       "env": {
         "GITHUB_TOKEN": "← pídelo al autor",
         "GITHUB_OWNER": "MILLERMARRU",
@@ -255,14 +260,15 @@ On **macOS / Linux**, use `"command": "npx"` directly.
 }
 ```
 
-### Windows
+### macOS / Linux
 
 ```json
 {
   "mcpServers": {
     "dochubs": {
-      "command": "cmd",
-      "args": ["/c", "npx", "dochubs-mcp"],
+      "type": "stdio",
+      "command": "npx",
+      "args": ["dochubs-mcp"],
       "env": {
         "GITHUB_TOKEN": "← pídelo al autor",
         "GITHUB_OWNER": "MILLERMARRU",
