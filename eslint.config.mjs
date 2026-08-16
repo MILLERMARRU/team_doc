@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // mcp/dist es código compilado (build output), no fuente autoral.
+    // tsconfig.json ya lo excluye del typecheck por el mismo motivo.
+    "mcp/dist/**",
   ]),
 ]);
 
