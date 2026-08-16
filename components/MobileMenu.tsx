@@ -21,6 +21,7 @@ export default function MobileMenu() {
   const ref = useRef<HTMLDivElement>(null);
 
   // Cerrar al cambiar de ruta
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setOpen(false); }, [pathname]);
 
   // Cerrar al hacer click fuera
