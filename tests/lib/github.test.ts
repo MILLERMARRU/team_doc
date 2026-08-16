@@ -1,14 +1,24 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getContent } = vi.hoisted(() => ({ getContent: vi.fn() }));
+const { getContent, listCommits, getCommit } = vi.hoisted(() => ({
+  getContent: vi.fn(),
+  listCommits: vi.fn(),
+  getCommit: vi.fn(),
+}));
 
 vi.mock("@octokit/rest", () => ({
   Octokit: vi.fn().mockImplementation(function MockOctokit() {
-    return { repos: { getContent } };
+    return { repos: { getContent, listCommits, getCommit } };
   }),
 }));
 
-import { buildRawUrl, getFileContent } from "@/lib/github";
+import {
+  buildRawUrl,
+  getFileContent,
+  getFileContentAtRef,
+  getFileDiffAtCommit,
+  listFileCommits,
+} from "@/lib/github";
 
 const originalEnv = { ...process.env };
 
@@ -87,6 +97,104 @@ describe("getFileContent", () => {
     });
 
     const result = await getFileContent("docs/una-carpeta");
+    expect(result).toBeNull();
+  });
+});
+
+describe("getFileContentAtRef", () => {
+  beforeEach(() => {
+    getContent.mockReset();
+    process.env.GITHUB_TOKEN = "fake-token";
+    process.env.GITHUB_OWNER = "acme";
+    process.env.GITHUB_REPO = "docs-repo";
+  });
+
+  it("pasa el sha como ref en vez del branch configurado", async () => {
+    getContent.mockResolvedValueOnce({
+      data: {
+        type: "file",
+        content: Buffer.from("versión vieja", "utf-8").toString("base64"),
+        sha: "filesha",
+      },
+    });
+
+    const result = await getFileContentAtRef("docs/x.md", "abc1234");
+
+    expect(result).toEqual({ content: "versión vieja", sha: "filesha" });
+    expect(getContent).toHaveBeenCalledWith(
+      expect.objectContaining({ owner: "acme", repo: "docs-repo", ref: "abc1234" })
+    );
+  });
+});
+
+describe("listFileCommits", () => {
+  beforeEach(() => {
+    listCommits.mockReset();
+    process.env.GITHUB_TOKEN = "fake-token";
+    process.env.GITHUB_OWNER = "acme";
+    process.env.GITHUB_REPO = "docs-repo";
+  });
+
+  it("mapea los commits al shape CommitSummary", async () => {
+    listCommits.mockResolvedValueOnce({
+      data: [
+        {
+          sha: "abc1234567",
+          html_url: "https://github.com/acme/docs-repo/commit/abc1234567",
+          commit: {
+            message: "docs: update intro",
+            author: { name: "Miller", date: "2026-01-01T00:00:00Z" },
+          },
+        },
+      ],
+    });
+
+    const result = await listFileCommits("docs/intro.md");
+
+    expect(result).toEqual([
+      {
+        sha: "abc1234567",
+        message: "docs: update intro",
+        authorName: "Miller",
+        date: "2026-01-01T00:00:00Z",
+        htmlUrl: "https://github.com/acme/docs-repo/commit/abc1234567",
+      },
+    ]);
+    expect(listCommits).toHaveBeenCalledWith(
+      expect.objectContaining({ path: "docs/intro.md", per_page: 20 })
+    );
+  });
+});
+
+describe("getFileDiffAtCommit", () => {
+  beforeEach(() => {
+    getCommit.mockReset();
+    process.env.GITHUB_TOKEN = "fake-token";
+    process.env.GITHUB_OWNER = "acme";
+    process.env.GITHUB_REPO = "docs-repo";
+  });
+
+  it("retorna el patch y status del archivo dentro del commit", async () => {
+    getCommit.mockResolvedValueOnce({
+      data: {
+        files: [
+          { filename: "docs/intro.md", status: "modified", patch: "@@ -1 +1 @@\n-a\n+b" },
+          { filename: "index.json", status: "modified", patch: "@@ ..." },
+        ],
+      },
+    });
+
+    const result = await getFileDiffAtCommit("docs/intro.md", "abc123");
+
+    expect(result).toEqual({ patch: "@@ -1 +1 @@\n-a\n+b", status: "modified" });
+  });
+
+  it("retorna null si el commit no tocó ese archivo", async () => {
+    getCommit.mockResolvedValueOnce({
+      data: { files: [{ filename: "otro-doc.md", status: "modified", patch: "..." }] },
+    });
+
+    const result = await getFileDiffAtCommit("docs/intro.md", "abc123");
     expect(result).toBeNull();
   });
 });
