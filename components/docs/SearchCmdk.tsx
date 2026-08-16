@@ -24,6 +24,9 @@ export default function SearchCmdk({ index }: SearchCmdkProps) {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
+  // Evitar hydration mismatch: no hay sistema externo que sincronizar,
+  // solo necesitamos distinguir el primer render (servidor) del cliente.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setMounted(true); }, []);
 
   // Bloquear scroll del body cuando el modal está abierto
