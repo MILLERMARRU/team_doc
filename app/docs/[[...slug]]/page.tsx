@@ -10,6 +10,7 @@ import { notFound } from "next/navigation";
 import { getDocsIndex, getDocContent, findItemBySlug, extractToc } from "@/lib/docs";
 import Markdown from "@/components/docs/Markdown";
 import Toc from "@/components/docs/Toc";
+import ViewTracker from "@/components/docs/ViewTracker";
 import Link from "next/link";
 import { BookOpen, ArrowRight, ArrowLeft, ChevronRight } from "lucide-react";
 import type { DocItem } from "@/types";
@@ -74,6 +75,7 @@ export default async function DocsPage({ params }: PageProps) {
 
   return (
     <div className="flex gap-12 xl:gap-32">
+      <ViewTracker slug={slugStr} />
       {/* Contenido principal */}
       <article className="flex-1 min-w-0">
         {/* Breadcrumb */}
