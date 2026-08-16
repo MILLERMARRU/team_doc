@@ -194,6 +194,18 @@ export async function listDirectory(
   }
 }
 
+// ── Saber si el repo configurado es privado ───────────────────────────────
+// Usado para bloquear la escritura de credenciales (users.json) en repos
+// públicos: los hashes de contraseña no deben quedar expuestos.
+
+export async function isRepoPrivate(): Promise<boolean> {
+  const octokit = getOctokit();
+  const { owner, repo } = getRepoConfig();
+
+  const { data } = await octokit.repos.get({ owner, repo });
+  return !!data.private;
+}
+
 // ── Construir URL pública raw.githubusercontent.com ──────────────────────────
 
 export function buildRawUrl(path: string): string {
