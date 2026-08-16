@@ -4,7 +4,7 @@
 // ============================================================
 
 import Link from "next/link";
-import { BookOpen, LayoutDashboard } from "lucide-react";
+import { BookOpen, LayoutDashboard, Bot } from "lucide-react";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import SearchCmdk from "@/components/docs/SearchCmdk";
 import MobileMenu from "@/components/MobileMenu";
@@ -43,6 +43,13 @@ export default async function Navbar() {
             className="px-3 py-1.5 rounded-md text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
           >
             Team
+          </Link>
+          <Link
+            href="/mcp"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <Bot className="h-3.5 w-3.5" />
+            MCP
           </Link>
         </nav>
 
