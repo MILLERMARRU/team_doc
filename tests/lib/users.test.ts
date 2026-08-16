@@ -1,18 +1,31 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { UserRecord } from "@/types";
 
+const fakeCredentialsRepo = {
+  owner: "acme",
+  repo: "creds-repo",
+  branch: "main",
+};
+
 vi.mock("@/lib/github", () => ({
   getFileContent: vi.fn(),
   isRepoPrivate: vi.fn(),
   upsertFile: vi.fn(),
+  getCredentialsRepoConfig: vi.fn(() => fakeCredentialsRepo),
 }));
 
-import { getFileContent, isRepoPrivate, upsertFile } from "@/lib/github";
+import {
+  getCredentialsRepoConfig,
+  getFileContent,
+  isRepoPrivate,
+  upsertFile,
+} from "@/lib/github";
 import { createUserInRepo, getUsersFromRepo, toSafeUser } from "@/lib/users";
 
 const mockedGetFileContent = vi.mocked(getFileContent);
 const mockedIsRepoPrivate = vi.mocked(isRepoPrivate);
 const mockedUpsertFile = vi.mocked(upsertFile);
+const mockedGetCredentialsRepoConfig = vi.mocked(getCredentialsRepoConfig);
 
 describe("getUsersFromRepo", () => {
   beforeEach(() => {
@@ -33,6 +46,17 @@ describe("getUsersFromRepo", () => {
       sha: "abc",
     });
     await expect(getUsersFromRepo()).resolves.toEqual(users);
+  });
+
+  it("lee users.json del repo de credenciales, no del repo de docs", async () => {
+    mockedGetFileContent.mockResolvedValue(null);
+    await getUsersFromRepo();
+
+    expect(mockedGetCredentialsRepoConfig).toHaveBeenCalled();
+    expect(mockedGetFileContent).toHaveBeenCalledWith(
+      "users.json",
+      fakeCredentialsRepo
+    );
   });
 
   it("retorna [] si el contenido no es JSON válido", async () => {
@@ -115,9 +139,12 @@ describe("createUserInRepo", () => {
     });
 
     expect(mockedUpsertFile).toHaveBeenCalledTimes(1);
-    const [path, content, message] = mockedUpsertFile.mock.calls[0];
+    const [path, content, message, repoRef] = mockedUpsertFile.mock.calls[0];
     expect(path).toBe("users.json");
     expect(message).toContain("sam");
+    // Escribe en el repo de credenciales, no en el repo de docs
+    expect(repoRef).toEqual(fakeCredentialsRepo);
+    expect(mockedIsRepoPrivate).toHaveBeenCalledWith(fakeCredentialsRepo);
 
     const written = JSON.parse(content);
     expect(written).toHaveLength(1);
