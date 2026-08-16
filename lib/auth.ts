@@ -5,7 +5,8 @@
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import type { SessionPayload } from "@/types";
+import type { SafeUser, SessionPayload, UserRecord, UserRole } from "@/types";
+import { getUsersFromRepo, toSafeUser } from "./users";
 
 const COOKIE_NAME = "docs_session";
 const SESSION_DURATION = "8h";
@@ -16,21 +17,48 @@ function getSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-// ── Cargamos los usuarios desde el JSON ─────────────────────
+// ── Usuarios locales (data/users.json) ───────────────────────
+// Fallback de desarrollo: el archivo real nunca se commitea (ver
+// .gitignore) y en producción (Vercel) no existe en el filesystem
+// de runtime. Los usuarios "de verdad" viven en el repo de docs
+// (lib/users.ts). Los locales se tratan como rol "admin" implícito
+// para no romper el comportamiento previo a PR #7.
 
-interface StoredUser {
-  username: string;
-  /** Contraseña hasheada con bcrypt */
-  passwordHash: string;
+async function getLocalUsers(): Promise<UserRecord[]> {
+  try {
+    const { readFileSync } = await import("fs");
+    const { join } = await import("path");
+    const filePath = join(process.cwd(), "data", "users.json");
+    const raw = readFileSync(filePath, "utf-8");
+    return JSON.parse(raw) as UserRecord[];
+  } catch {
+    // No existe (producción, o dev sin setup local todavía) → sin fallback
+    return [];
+  }
 }
 
-export async function getUsersFromJson(): Promise<StoredUser[]> {
-  // Importación dinámica para que solo corra en servidor
-  const { readFileSync } = await import("fs");
-  const { join } = await import("path");
-  const filePath = join(process.cwd(), "data", "users.json");
-  const raw = readFileSync(filePath, "utf-8");
-  return JSON.parse(raw) as StoredUser[];
+// ── Unir usuarios locales + los del repo de GitHub ────────────
+// Si un mismo username existe en ambos lados, gana el del repo.
+
+async function getAllUsers(): Promise<UserRecord[]> {
+  const [local, repo] = await Promise.all([
+    getLocalUsers(),
+    getUsersFromRepo().catch(() => [] as UserRecord[]),
+  ]);
+
+  const merged = new Map<string, UserRecord>();
+  for (const u of local) {
+    merged.set(u.username.toLowerCase(), { ...u, role: u.role ?? "admin" });
+  }
+  for (const u of repo) {
+    merged.set(u.username.toLowerCase(), u);
+  }
+  return [...merged.values()];
+}
+
+export async function getAllUsersSafe(): Promise<SafeUser[]> {
+  const users = await getAllUsers();
+  return users.map(toSafeUser);
 }
 
 // ── Verificar credenciales ───────────────────────────────────
@@ -38,19 +66,26 @@ export async function getUsersFromJson(): Promise<StoredUser[]> {
 export async function verifyCredentials(
   username: string,
   password: string
-): Promise<boolean> {
-  const users = await getUsersFromJson();
+): Promise<{ ok: boolean; role: UserRole | null }> {
+  const users = await getAllUsers();
   const user = users.find(
     (u) => u.username.toLowerCase() === username.toLowerCase()
   );
-  if (!user) return false;
-  return bcrypt.compare(password, user.passwordHash);
+  if (!user) return { ok: false, role: null };
+
+  const valid = await bcrypt.compare(password, user.passwordHash);
+  if (!valid) return { ok: false, role: null };
+
+  return { ok: true, role: user.role ?? "admin" };
 }
 
 // ── Crear sesión JWT ─────────────────────────────────────────
 
-export async function createSession(username: string): Promise<string> {
-  const token = await new SignJWT({ username } satisfies SessionPayload)
+export async function createSession(
+  username: string,
+  role: UserRole
+): Promise<string> {
+  const token = await new SignJWT({ username, role } satisfies SessionPayload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(SESSION_DURATION)
@@ -67,7 +102,9 @@ export async function getSession(): Promise<SessionPayload | null> {
     if (!token) return null;
 
     const { payload } = await jwtVerify(token, getSecret());
-    return payload as unknown as SessionPayload;
+    const session = payload as unknown as SessionPayload;
+    // Sesiones emitidas antes de PR #7 no tienen "role" en el JWT.
+    return { ...session, role: session.role ?? "admin" };
   } catch {
     return null;
   }
