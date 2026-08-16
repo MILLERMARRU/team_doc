@@ -34,14 +34,20 @@ El token de GitHub necesita estos permisos mínimos (Fine-grained PAT):
 - **Contents: Read and write**
 - **Metadata: Read**
 
-### 3. Cambiar contraseña del admin
+### 3. Crear tu usuario admin
 
-La contraseña por defecto es `admin123`. Para cambiarla:
+`data/users.json` **no se sube al repo** (contiene hashes de contraseñas).
+Créalo localmente a partir del template:
 
 ```bash
-npm run hash-password "mi-nueva-contraseña"
-# Copia el hash generado y pégalo en data/users.json
+cp data/users.example.json data/users.json
+npm run hash-password "mi-contraseña"
+# Copia el hash generado y pégalo como "passwordHash" en data/users.json
 ```
+
+En producción (Vercel u otro host), sube este archivo por fuera del repo
+(por ejemplo como parte del deploy) o adapta `lib/auth.ts` para leer las
+credenciales desde variables de entorno.
 
 ### 4. Ejecutar
 
