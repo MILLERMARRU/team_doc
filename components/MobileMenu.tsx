@@ -7,11 +7,12 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, BookOpen, Users, LayoutDashboard } from "lucide-react";
+import { Menu, X, BookOpen, Users, LayoutDashboard, Bot } from "lucide-react";
 
 const links = [
   { href: "/docs",  label: "Docs",  icon: <BookOpen className="h-4 w-4" /> },
   { href: "/team",  label: "Team",  icon: <Users className="h-4 w-4" /> },
+  { href: "/mcp",   label: "MCP",   icon: <Bot className="h-4 w-4" /> },
   { href: "/admin", label: "Admin", icon: <LayoutDashboard className="h-4 w-4" /> },
 ];
 
