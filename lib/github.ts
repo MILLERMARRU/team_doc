@@ -17,7 +17,13 @@ function getOctokit(): Octokit {
   return _octokit;
 }
 
-function getRepoConfig() {
+export interface RepoRef {
+  owner: string;
+  repo: string;
+  branch: string;
+}
+
+function getRepoConfig(): RepoRef {
   const owner = process.env.GITHUB_OWNER;
   const repo = process.env.GITHUB_REPO;
   const branch = process.env.GITHUB_BRANCH ?? "main";
@@ -29,14 +35,34 @@ function getRepoConfig() {
   return { owner, repo, branch };
 }
 
+// ── Repo separado para credenciales (users.json) ──────────────
+// Deliberadamente distinto de GITHUB_OWNER/REPO: ese repo puede ser
+// público (p. ej. un repo de docs con estrellas), y los hashes de
+// contraseña no deben terminar ahí. Usa el mismo GITHUB_TOKEN, así
+// que el PAT debe tener acceso a ambos repos.
+
+export function getCredentialsRepoConfig(): RepoRef {
+  const owner = process.env.CREDENTIALS_GITHUB_OWNER;
+  const repo = process.env.CREDENTIALS_GITHUB_REPO;
+  const branch = process.env.CREDENTIALS_GITHUB_BRANCH ?? "main";
+  if (!owner || !repo) {
+    throw new Error(
+      "CREDENTIALS_GITHUB_OWNER y CREDENTIALS_GITHUB_REPO deben estar " +
+        "definidos en .env.local (repo PRIVADO separado para users.json)"
+    );
+  }
+  return { owner, repo, branch };
+}
+
 // ── Leer un archivo del repo ─────────────────────────────────
 
 export async function getFileContent(
-  path: string
+  path: string,
+  repoRef?: RepoRef
 ): Promise<{ content: string; sha: string } | null> {
   try {
     const octokit = getOctokit();
-    const { owner, repo, branch } = getRepoConfig();
+    const { owner, repo, branch } = repoRef ?? getRepoConfig();
 
     const response = await octokit.repos.getContent({
       owner,
@@ -63,13 +89,14 @@ export async function getFileContent(
 export async function upsertFile(
   path: string,
   content: string,
-  commitMessage: string
+  commitMessage: string,
+  repoRef?: RepoRef
 ): Promise<void> {
   const octokit = getOctokit();
-  const { owner, repo, branch } = getRepoConfig();
+  const { owner, repo, branch } = repoRef ?? getRepoConfig();
 
   // Necesitamos el SHA si el archivo ya existe (para actualizarlo)
-  const existing = await getFileContent(path);
+  const existing = await getFileContent(path, repoRef);
 
   const encodedContent = Buffer.from(content, "utf-8").toString("base64");
 
@@ -192,6 +219,18 @@ export async function listDirectory(
     if ((err as { status?: number }).status === 404) return [];
     throw err;
   }
+}
+
+// ── Saber si el repo configurado es privado ───────────────────────────────
+// Usado para bloquear la escritura de credenciales (users.json) en repos
+// públicos: los hashes de contraseña no deben quedar expuestos.
+
+export async function isRepoPrivate(repoRef?: RepoRef): Promise<boolean> {
+  const octokit = getOctokit();
+  const { owner, repo } = repoRef ?? getRepoConfig();
+
+  const { data } = await octokit.repos.get({ owner, repo });
+  return !!data.private;
 }
 
 // ── Construir URL pública raw.githubusercontent.com ──────────────────────────

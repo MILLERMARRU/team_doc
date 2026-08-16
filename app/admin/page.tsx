@@ -27,5 +27,7 @@ export default async function AdminPage() {
     index = { sections: [] };
   }
 
-  return <AdminEditor username={session.username} index={index} />;
+  return (
+    <AdminEditor username={session.username} role={session.role} index={index} />
+  );
 }

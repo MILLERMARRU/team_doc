@@ -11,6 +11,7 @@
     "test": "vitest run",
     "hash-password": "node scripts/hash-password.mjs",
     "seed-demo": "node scripts/seed-demo-docs.mjs",
+    "create-first-admin": "node scripts/create-first-admin.mjs",
     "mcp": "tsx mcp/server.ts"
   },
   "dependencies": {
