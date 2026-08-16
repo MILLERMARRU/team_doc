@@ -43,6 +43,7 @@ por un SaaS ni mantener infraestructura.
 - 📚 Sidebar, tabla de contenidos y navegación prev/next automáticos
 - 🔐 Auth propia con JWT + bcrypt (sin proveedor externo), con roles admin/editor
 - 🕓 Historial de versiones por doc con diff y restaurar (aprovecha que ya vive en Git)
+- 📊 Analytics de qué docs se leen (y cuáles no) con Upstash Redis
 - 🤖 Servidor MCP incluido (`mcp/`) para que agentes de IA (Claude, Cursor, etc.)
   lean y escriban docs directamente
 
@@ -138,6 +139,22 @@ npm run dev
 
 Abre [http://localhost:3000](http://localhost:3000)
 
+### 5. Analytics de vistas (opcional)
+
+Cuenta cuántas veces se lee cada doc, usando **Upstash Redis** (Vercel Marketplace,
+tier gratis). Se provisiona con el CLI de Vercel:
+
+```bash
+vercel link
+vercel integration add upstash/upstash-kv
+vercel env pull .env.local
+```
+
+Esto agrega `KV_REST_API_URL` y `KV_REST_API_TOKEN` a tu `.env.local`
+automáticamente. Si no las configurás, la pestaña "Analytics" del panel
+simplemente muestra un error al cargar — el resto del sitio sigue
+funcionando igual (no es una dependencia dura).
+
 ## Rutas
 
 | Ruta | Descripción |
@@ -155,6 +172,8 @@ Abre [http://localhost:3000](http://localhost:3000)
 | `/api/docs/history` | GET – Historial de commits de un doc (`?slug=`) |
 | `/api/docs/history/diff` | GET – Diff de un doc en un commit (`?slug=&sha=`) |
 | `/api/docs/history/restore` | POST – Restaura un doc a una versión anterior |
+| `/api/docs/track-view` | POST – Registra una vista de un doc (pública) |
+| `/api/admin/analytics` | GET – Vistas por doc (requiere sesión) |
 
 ## Estructura del proyecto
 
@@ -173,12 +192,19 @@ app/
       AdminEditor.tsx
       LoginForm.tsx
       UsersPanel.tsx
+      HistoryPanel.tsx
+      AnalyticsPanel.tsx
   api/
     docs/upsert/route.ts
     docs/nav/route.ts
+    docs/history/route.ts
+    docs/history/diff/route.ts
+    docs/history/restore/route.ts
+    docs/track-view/route.ts
     auth/login/route.ts
     auth/logout/route.ts
     admin/users/route.ts
+    admin/analytics/route.ts
 components/
   Navbar.tsx
   Providers.tsx
@@ -188,6 +214,7 @@ components/
     Markdown.tsx
     SearchCmdk.tsx
     MobileSidebar.tsx
+    ViewTracker.tsx              # Beacon client-side para /api/docs/track-view
   ui/
     ThemeToggle.tsx
 lib/
@@ -195,6 +222,7 @@ lib/
   docs.ts                       # Utilidades docs
   auth.ts                       # JWT / bcrypt / merge de usuarios
   users.ts                      # Usuarios persistidos en users.json del repo de credenciales
+  analytics.ts                  # Contador de vistas (Upstash Redis)
   utils.ts                      # cn()
 data/
   users.example.json            # Template de usuarios admin (fallback local)

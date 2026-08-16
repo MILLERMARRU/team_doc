@@ -27,9 +27,11 @@ import {
   Pencil,
   X,
   Users,
+  BarChart3,
 } from "lucide-react";
 import DocsBrowser from "./DocsBrowser";
 import UsersPanel from "./UsersPanel";
+import AnalyticsPanel from "./AnalyticsPanel";
 import { toast } from "sonner";
 import Markdown from "@/components/docs/Markdown";
 import { Button } from "@/components/ui/button";
@@ -73,7 +75,7 @@ export default function AdminEditor({ username, role, index }: AdminEditorProps)
   const [uploadingImage, setUploadingImage] = useState(false);
 
   // ── Vista activa: editor, explorador o usuarios ─────────
-  const [view, setView] = useState<"new" | "browser" | "users">("new");
+  const [view, setView] = useState<"new" | "browser" | "users" | "analytics">("new");
   // Ítem que se está editando (null = documento nuevo)
   const [editingItem, setEditingItem] = useState<DocItem | null>(null);
 
@@ -404,6 +406,18 @@ export default function AdminEditor({ username, role, index }: AdminEditorProps)
               Usuarios
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => setView("analytics")}
+            className={`cursor-pointer flex flex-1 sm:flex-initial items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              view === "analytics"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <BarChart3 className="h-3.5 w-3.5" />
+            Analytics
+          </button>
         </div>
 
         {/* ── Vista: Explorador de documentos ── */}
@@ -413,6 +427,9 @@ export default function AdminEditor({ username, role, index }: AdminEditorProps)
 
         {/* ── Vista: Gestión de usuarios (solo admin) ── */}
         {view === "users" && role === "admin" && <UsersPanel />}
+
+        {/* ── Vista: Analytics (vistas por doc) ── */}
+        {view === "analytics" && <AnalyticsPanel index={index} />}
 
         {/* ── Vista: Formulario editor ── */}
         {view === "new" && (
