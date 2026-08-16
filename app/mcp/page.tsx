@@ -25,11 +25,11 @@ export const metadata: Metadata = {
 };
 
 const tools = [
-  { icon: <FilePlus className="h-4 w-4" />, name: "create_doc", body: "Crea un doc nuevo — auto-genera slug, sección y tags." },
+  { icon: <FilePlus className="h-4 w-4" />, name: "create_doc", body: "Crea un doc nuevo (auto-genera slug, sección y tags)." },
   { icon: <Pencil className="h-4 w-4" />, name: "update_doc", body: "Actualiza un doc existente por su slug." },
   { icon: <FileText className="h-4 w-4" />, name: "get_doc", body: "Lee el Markdown completo de un doc." },
   { icon: <ListTree className="h-4 w-4" />, name: "list_docs", body: "Lista todos los docs, filtrables por sección." },
-  { icon: <Trash2 className="h-4 w-4" />, name: "delete_doc", body: "Borra un doc — respeta el dueño original." },
+  { icon: <Trash2 className="h-4 w-4" />, name: "delete_doc", body: "Borra un doc (respeta el dueño original)." },
 ];
 
 const exampleConfig = `{
@@ -117,13 +117,13 @@ export default function McpPage() {
                 <code className="text-xs bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded px-1.5 py-0.5">
                   GITHUB_TOKEN
                 </code>{" "}
-                — Fine-grained PAT con acceso de escritura al repo de docs
+                : Fine-grained PAT con acceso de escritura al repo de docs
               </li>
               <li>
                 <code className="text-xs bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded px-1.5 py-0.5">
                   REVALIDATE_SECRET
                 </code>{" "}
-                — para que tus cambios se vean al instante (opcional, pero recomendado)
+                : para que tus cambios se vean al instante (opcional, pero recomendado)
               </li>
             </ul>
             <div className="flex flex-wrap gap-2">

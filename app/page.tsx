@@ -60,7 +60,7 @@ export default function HomePage() {
             Un lugar para compartir lo que aprendes
           </h2>
           <p className="text-neutral-500 dark:text-neutral-400 text-base leading-relaxed mb-12">
-            Este sitio nació con una idea simple: aprender en público. No importa el stack, el lenguaje o el nivel —
+            Este sitio nació con una idea simple: aprender en público. No importa el stack, el lenguaje o el nivel;
             lo que importa es documentar el camino. Cada cosa que resuelves, cada concepto que entiendes,
             cada proyecto que construyes merece un lugar donde vivir y ser encontrado por alguien más
             que está pasando por lo mismo.
@@ -119,7 +119,7 @@ export default function HomePage() {
             </h2>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
               Ya sea para compartir tu aprendizaje, documentar tus proyectos personales o construir
-              algo completamente diferente — aquí van los fundamentos que hacen funcionar este sistema.
+              algo completamente diferente: aquí van los fundamentos que hacen funcionar este sistema.
             </p>
           </div>
 
