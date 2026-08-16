@@ -89,18 +89,34 @@ Crea una sección "Bienvenida" con un doc de primeros pasos. Es idempotente
 
 ### 3. Crear tu usuario admin
 
-`data/users.json` **no se sube al repo** (contiene hashes de contraseñas).
-Créalo localmente a partir del template:
+Desde PR #7, los usuarios "de verdad" viven en `users.json` **dentro del
+repo de docs configurado** (mismo patrón que `index.json`), no en un archivo
+local — así funcionan también en producción (Vercel), donde el filesystem
+es de solo lectura en runtime.
+
+**El repo de docs debe ser privado** si vas a crear usuarios: el proyecto se
+niega a escribir hashes de contraseña en un repo público.
+
+Crea el primer admin con el script de bootstrap (rompe el círculo de
+"necesitas ser admin para crear un admin"):
+
+```bash
+npm run create-first-admin -- tu-usuario "tu-contraseña-segura"
+```
+
+Con esa cuenta ya puedes entrar a `/admin` → pestaña **Usuarios** para
+crear el resto del equipo (con rol `admin` o `editor`) desde la UI.
+
+**Fallback de desarrollo local (opcional):** `data/users.json` sigue
+funcionando como antes para pruebas locales rápidas sin tocar el repo real.
+No se commitea (ver `data/users.example.json`) y sus usuarios se tratan
+como rol `admin` implícito:
 
 ```bash
 cp data/users.example.json data/users.json
 npm run hash-password "mi-contraseña"
 # Copia el hash generado y pégalo como "passwordHash" en data/users.json
 ```
-
-En producción (Vercel u otro host), sube este archivo por fuera del repo
-(por ejemplo como parte del deploy) o adapta `lib/auth.ts` para leer las
-credenciales desde variables de entorno.
 
 ### 4. Ejecutar
 
@@ -124,6 +140,7 @@ Abre [http://localhost:3000](http://localhost:3000)
 | `/api/docs/nav` | GET – Devuelve el index.json |
 | `/api/auth/login` | POST – Login |
 | `/api/auth/logout` | POST – Logout |
+| `/api/admin/users` | GET/POST – Lista/crea usuarios (requiere role `admin`) |
 
 ## Estructura del proyecto
 
@@ -141,11 +158,13 @@ app/
     _components/
       AdminEditor.tsx
       LoginForm.tsx
+      UsersPanel.tsx
   api/
     docs/upsert/route.ts
     docs/nav/route.ts
     auth/login/route.ts
     auth/logout/route.ts
+    admin/users/route.ts
 components/
   Navbar.tsx
   Providers.tsx
@@ -160,15 +179,18 @@ components/
 lib/
   github.ts                     # Cliente GitHub API
   docs.ts                       # Utilidades docs
-  auth.ts                       # JWT / bcrypt
+  auth.ts                       # JWT / bcrypt / merge de usuarios
+  users.ts                      # Usuarios persistidos en users.json del repo
   utils.ts                      # cn()
 data/
-  users.example.json            # Template de usuarios admin
-  users.json                    # Usuarios admin reales (no se sube, ver .gitignore)
+  users.example.json            # Template de usuarios admin (fallback local)
+  users.json                    # Fallback local, solo dev (no se sube, ver .gitignore)
 types/
   index.ts                      # Tipos globales
 scripts/
   hash-password.mjs             # Genera hashes bcrypt
+  create-first-admin.mjs        # Bootstrap del primer usuario en el repo
+  seed-demo-docs.mjs            # Contenido de ejemplo
 mcp/
   server.ts                     # Servidor MCP para agentes de IA
 ```
@@ -179,8 +201,12 @@ mcp/
 - El panel `/admin` redirige a `/admin/login` sin sesión válida.
 - El Markdown se sanitiza con `rehype-sanitize` (previene XSS).
 - Tamaño máximo de upload: **2 MB**.
-- Sesión JWT con expiración de **8 horas**.
-- `data/users.json` nunca se commitea (ver `data/users.example.json`).
+- Sesión JWT con expiración de **8 horas**, incluye el `role` del usuario.
+- `data/users.json` (fallback local) nunca se commitea (ver `data/users.example.json`).
+- Los usuarios "de verdad" viven en `users.json` del repo de docs. El proyecto
+  **se niega a crear usuarios si ese repo no es privado** (`isRepoPrivate()`),
+  para no exponer hashes de contraseña.
+- Roles: `admin` (gestiona usuarios) y `editor` (solo lee/escribe docs).
 
 ## Deployment (Vercel)
 
