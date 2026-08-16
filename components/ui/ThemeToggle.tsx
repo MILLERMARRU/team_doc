@@ -13,7 +13,9 @@ export default function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Evitar hydration mismatch
+  // Evitar hydration mismatch: no hay sistema externo que sincronizar,
+  // solo necesitamos distinguir el primer render (servidor) del cliente.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   if (!mounted) return <div className="w-8 h-8" />;
