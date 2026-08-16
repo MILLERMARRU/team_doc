@@ -64,8 +64,14 @@ Copia `.env.example` a `.env.local` y rellena:
 ```env
 GITHUB_TOKEN=ghp_xxxx           # Fine-grained PAT con Contents: read+write
 GITHUB_OWNER=tu-usuario
-GITHUB_REPO=mi-docs             # Repo donde se guardarán los .md
+GITHUB_REPO=mi-docs             # Repo donde se guardarán los .md (puede ser público)
 GITHUB_BRANCH=main
+
+# Repo PRIVADO separado, solo para users.json (ver sección 3)
+CREDENTIALS_GITHUB_OWNER=tu-usuario
+CREDENTIALS_GITHUB_REPO=mi-docs-credenciales
+CREDENTIALS_GITHUB_BRANCH=main
+
 AUTH_SECRET=secreto-muy-largo-de-32-chars
 ```
 
@@ -89,13 +95,17 @@ Crea una sección "Bienvenida" con un doc de primeros pasos. Es idempotente
 
 ### 3. Crear tu usuario admin
 
-Desde PR #7, los usuarios "de verdad" viven en `users.json` **dentro del
-repo de docs configurado** (mismo patrón que `index.json`), no en un archivo
-local — así funcionan también en producción (Vercel), donde el filesystem
-es de solo lectura en runtime.
+Desde PR #7, los usuarios "de verdad" viven en `users.json` dentro de un
+**repo de GitHub separado y privado**, distinto del repo de docs (que puede
+quedarse público — por ejemplo, si ya tiene estrellas). Así funcionan también
+en producción (Vercel), donde el filesystem es de solo lectura en runtime.
 
-**El repo de docs debe ser privado** si vas a crear usuarios: el proyecto se
-niega a escribir hashes de contraseña en un repo público.
+1. Crea un repo nuevo en GitHub (ej. `mi-docs-credenciales`) y **hazlo privado**.
+2. Agrégalo al mismo Fine-grained PAT que usás en `GITHUB_TOKEN` (Settings →
+   Developer settings → tu token → editar "Repository access" y sumar este repo).
+3. Completa `CREDENTIALS_GITHUB_OWNER` / `CREDENTIALS_GITHUB_REPO` en `.env.local`.
+
+El proyecto se niega a escribir hashes de contraseña si ese repo no es privado.
 
 Crea el primer admin con el script de bootstrap (rompe el círculo de
 "necesitas ser admin para crear un admin"):
@@ -180,7 +190,7 @@ lib/
   github.ts                     # Cliente GitHub API
   docs.ts                       # Utilidades docs
   auth.ts                       # JWT / bcrypt / merge de usuarios
-  users.ts                      # Usuarios persistidos en users.json del repo
+  users.ts                      # Usuarios persistidos en users.json del repo de credenciales
   utils.ts                      # cn()
 data/
   users.example.json            # Template de usuarios admin (fallback local)
@@ -203,9 +213,11 @@ mcp/
 - Tamaño máximo de upload: **2 MB**.
 - Sesión JWT con expiración de **8 horas**, incluye el `role` del usuario.
 - `data/users.json` (fallback local) nunca se commitea (ver `data/users.example.json`).
-- Los usuarios "de verdad" viven en `users.json` del repo de docs. El proyecto
-  **se niega a crear usuarios si ese repo no es privado** (`isRepoPrivate()`),
-  para no exponer hashes de contraseña.
+- Los usuarios "de verdad" viven en `users.json` de un repo **separado y
+  privado** (`CREDENTIALS_GITHUB_OWNER/REPO`), distinto del repo de docs.
+  El proyecto **se niega a crear usuarios si ese repo no es privado**
+  (`isRepoPrivate()`), para no exponer hashes de contraseña — incluso si el
+  repo de docs es público.
 - Roles: `admin` (gestiona usuarios) y `editor` (solo lee/escribe docs).
 
 ## Deployment (Vercel)
