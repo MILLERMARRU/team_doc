@@ -342,7 +342,7 @@ export default function AdminEditor({ username, role, index }: AdminEditorProps)
             <p className="text-sm text-muted-foreground mt-0.5">
               Hola,{" "}
               <strong className="text-foreground">{username}</strong>
-              <span className="hidden sm:inline">{" "}— Publica y gestiona tu documentación en GitHub</span>
+              <span className="hidden sm:inline">{". "}Publica y gestiona tu documentación en GitHub</span>
             </p>
           </div>
           <button
