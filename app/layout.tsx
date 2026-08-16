@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "DocHubs – Comparte lo que aprendes",
+    default: "DocHubs · Comparte lo que aprendes",
     template: "%s · DocHubs",
   },
   description:
