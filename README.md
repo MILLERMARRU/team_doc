@@ -11,6 +11,8 @@ y aparece en el sitio al momento. GitHub es el storage; no hay base de datos que
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/MILLERMARRU/team_doc&env=GITHUB_TOKEN,GITHUB_OWNER,GITHUB_REPO,GITHUB_BRANCH,AUTH_SECRET&envDescription=Variables%20requeridas%20para%20conectar%20DocHubs%20a%20tu%20repo%20de%20docs%20en%20GitHub%2C%20ver%20la%20secci%C3%B3n%20README&envLink=https://github.com/MILLERMARRU/team_doc%231-variables-de-entorno&project-name=dochubs&repository-name=dochubs)
+
 </div>
 
 <!--
@@ -74,6 +76,16 @@ Crea el repo `mi-docs` (o el nombre que pusiste en `GITHUB_REPO`). Puede ser pú
 El token de GitHub necesita estos permisos mínimos (Fine-grained PAT):
 - **Contents: Read and write**
 - **Metadata: Read**
+
+**Opcional:** para no arrancar con el sitio vacío, siembra contenido de
+ejemplo en tu repo con:
+
+```bash
+npm run seed-demo
+```
+
+Crea una sección "Bienvenida" con un doc de primeros pasos. Es idempotente
+(correrlo dos veces no duplica nada) y respeta las variables de `.env.local`.
 
 ### 3. Crear tu usuario admin
 
