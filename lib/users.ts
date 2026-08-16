@@ -1,18 +1,21 @@
 // ============================================================
-//  lib/users.ts  –  usuarios admin persistidos en el repo de GitHub
-//  Mismo patrón que index.json en lib/docs.ts: users.json vive en
-//  la raíz del repo de docs configurado (GITHUB_OWNER/GITHUB_REPO).
+//  lib/users.ts  –  usuarios admin persistidos en un repo de GitHub
+//  APARTE del repo de docs (CREDENTIALS_GITHUB_OWNER/REPO): el repo
+//  de docs puede ser público, y los hashes de contraseña no deben
+//  terminar ahí. users.json vive en la raíz de ese repo separado,
+//  que debe ser privado.
 // ============================================================
 
-import { getFileContent, isRepoPrivate, upsertFile } from "./github";
+import { getCredentialsRepoConfig, getFileContent, isRepoPrivate, upsertFile } from "./github";
 import type { SafeUser, UserRecord } from "@/types";
 
 const USERS_PATH = "users.json";
 
-// ── Leer usuarios desde el repo (users.json) ──────────────────
+// ── Leer usuarios desde el repo de credenciales (users.json) ──
 
 export async function getUsersFromRepo(): Promise<UserRecord[]> {
-  const file = await getFileContent(USERS_PATH);
+  const repoRef = getCredentialsRepoConfig();
+  const file = await getFileContent(USERS_PATH, repoRef);
   if (!file) return [];
 
   try {
@@ -42,12 +45,15 @@ export async function createUserInRepo(params: {
   role: "admin" | "editor";
   createdBy: string;
 }): Promise<void> {
+  const repoRef = getCredentialsRepoConfig();
+
   // Los hashes de contraseña no deben terminar en un repo público.
-  const isPrivate = await isRepoPrivate();
+  const isPrivate = await isRepoPrivate(repoRef);
   if (!isPrivate) {
     throw new Error(
-      "El repo de docs configurado (GITHUB_REPO) es público. No se pueden " +
-        "guardar credenciales de usuarios ahí. Hazlo privado antes de crear usuarios."
+      "El repo de credenciales configurado (CREDENTIALS_GITHUB_REPO) es " +
+        "público. No se pueden guardar credenciales de usuarios ahí. " +
+        "Hazlo privado antes de crear usuarios."
     );
   }
 
@@ -72,6 +78,7 @@ export async function createUserInRepo(params: {
   await upsertFile(
     USERS_PATH,
     JSON.stringify(users, null, 2) + "\n",
-    `chore: add user ${params.username} [admin panel]`
+    `chore: add user ${params.username} [admin panel]`,
+    repoRef
   );
 }
