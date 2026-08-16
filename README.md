@@ -41,7 +41,8 @@ por un SaaS ni mantener infraestructura.
 - 🔍 Búsqueda ⌘K con `cmdk`
 - 🌓 Tema oscuro/claro
 - 📚 Sidebar, tabla de contenidos y navegación prev/next automáticos
-- 🔐 Auth propia con JWT + bcrypt (sin proveedor externo)
+- 🔐 Auth propia con JWT + bcrypt (sin proveedor externo), con roles admin/editor
+- 🕓 Historial de versiones por doc con diff y restaurar (aprovecha que ya vive en Git)
 - 🤖 Servidor MCP incluido (`mcp/`) para que agentes de IA (Claude, Cursor, etc.)
   lean y escriban docs directamente
 
@@ -151,6 +152,9 @@ Abre [http://localhost:3000](http://localhost:3000)
 | `/api/auth/login` | POST – Login |
 | `/api/auth/logout` | POST – Logout |
 | `/api/admin/users` | GET/POST – Lista/crea usuarios (requiere role `admin`) |
+| `/api/docs/history` | GET – Historial de commits de un doc (`?slug=`) |
+| `/api/docs/history/diff` | GET – Diff de un doc en un commit (`?slug=&sha=`) |
+| `/api/docs/history/restore` | POST – Restaura un doc a una versión anterior |
 
 ## Estructura del proyecto
 
