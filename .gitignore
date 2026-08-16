@@ -30,8 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (.env.example SÍ se commitea: es el template que el README
+# le pide a cualquiera que clone el repo que copie a .env.local)
 .env*
+!.env.example
 
 # credenciales de admin (contiene hashes reales, nunca subir)
 /data/users.json
