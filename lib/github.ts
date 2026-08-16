@@ -84,6 +84,19 @@ export async function getFileContent(
   }
 }
 
+// ── Leer un archivo tal como estaba en un commit puntual ──────
+// El parámetro "ref" de la API de contenido acepta tanto nombres de
+// branch como SHAs de commit; se reutiliza getFileContent pasando el
+// sha como si fuera el branch.
+
+export async function getFileContentAtRef(
+  path: string,
+  ref: string
+): Promise<{ content: string; sha: string } | null> {
+  const { owner, repo } = getRepoConfig();
+  return getFileContent(path, { owner, repo, branch: ref });
+}
+
 // ── Crear o actualizar un archivo del repo ───────────────────
 
 export async function upsertFile(
@@ -219,6 +232,63 @@ export async function listDirectory(
     if ((err as { status?: number }).status === 404) return [];
     throw err;
   }
+}
+
+// ── Historial de commits de un archivo (para el diff viewer) ──────────────
+
+export interface CommitSummary {
+  sha: string;
+  message: string;
+  authorName: string;
+  date: string;
+  htmlUrl: string;
+}
+
+export async function listFileCommits(
+  path: string,
+  limit = 20
+): Promise<CommitSummary[]> {
+  const octokit = getOctokit();
+  const { owner, repo, branch } = getRepoConfig();
+
+  const { data } = await octokit.repos.listCommits({
+    owner,
+    repo,
+    path,
+    sha: branch,
+    per_page: limit,
+  });
+
+  return data.map((c) => ({
+    sha: c.sha,
+    message: c.commit.message,
+    authorName: c.commit.author?.name ?? c.author?.login ?? "desconocido",
+    date: c.commit.author?.date ?? c.commit.committer?.date ?? "",
+    htmlUrl: c.html_url,
+  }));
+}
+
+// ── Diff de un archivo en un commit puntual ────────────────────────────────
+// GitHub ya calcula el patch unificado por archivo en cada commit; no hace
+// falta diffear a mano dos versiones.
+
+export interface FileCommitDiff {
+  patch: string | null;
+  status: string;
+}
+
+export async function getFileDiffAtCommit(
+  path: string,
+  sha: string
+): Promise<FileCommitDiff | null> {
+  const octokit = getOctokit();
+  const { owner, repo } = getRepoConfig();
+
+  const { data } = await octokit.repos.getCommit({ owner, repo, ref: sha });
+  const file = data.files?.find((f) => f.filename === path);
+  if (!file) return null;
+
+  return { patch: file.patch ?? null, status: file.status };
 }
 
 // ── Saber si el repo configurado es privado ───────────────────────────────

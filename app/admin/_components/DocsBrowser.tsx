@@ -9,11 +9,12 @@ import { useRouter } from "next/navigation";
 import {
   Search, X, FileSearch, FolderOpen, FileText,
   ChevronDown, ChevronRight, Hash, Tag, Pencil, Loader2,
-  Trash2, AlertTriangle,
+  Trash2, AlertTriangle, History,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import HistoryPanel from "./HistoryPanel";
 import type { DocsIndex, DocItem } from "@/types";
 
 interface DocsBrowserProps {
@@ -31,6 +32,7 @@ export default function DocsBrowser({ index, username, onEditRequest }: DocsBrow
   const [loadingEdit, setLoadingEdit] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [loadingDelete, setLoadingDelete] = useState<string | null>(null);
+  const [historyItem, setHistoryItem] = useState<DocItem | null>(null);
 
   const lowerSearch = search.toLowerCase().trim();
   const filteredSections = index.sections
@@ -174,6 +176,9 @@ export default function DocsBrowser({ index, username, onEditRequest }: DocsBrow
                           <Button type="button" size="icon" variant="ghost" className="h-7 w-7 cursor-pointer" title="Editar documento" disabled={!!loadingEdit || !!loadingDelete} onClick={() => handleEdit(item)}>
                             {loadingEdit === item.slug ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Pencil className="h-3.5 w-3.5" />}
                           </Button>
+                          <Button type="button" size="icon" variant="ghost" className="h-7 w-7 cursor-pointer" title="Historial de versiones" disabled={!!loadingEdit || !!loadingDelete} onClick={() => setHistoryItem(item)}>
+                            <History className="h-3.5 w-3.5" />
+                          </Button>
                           <Button type="button" size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer" title="Eliminar documento" disabled={!!loadingDelete || !!loadingEdit} onClick={() => setConfirmDelete(confirmDelete === item.slug ? null : item.slug)}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -201,6 +206,14 @@ export default function DocsBrowser({ index, username, onEditRequest }: DocsBrow
           );
         })}
       </div>
+
+      {historyItem && (
+        <HistoryPanel
+          item={historyItem}
+          onClose={() => setHistoryItem(null)}
+          onRestored={() => router.refresh()}
+        />
+      )}
     </div>
   );
 }
