@@ -1,6 +1,47 @@
-# DocHubs — Documentación autogestionable sin redeploy
+<div align="center">
 
-> Sitio de documentación técnica donde el usuario sube/pega Markdown desde un panel `/admin` y el contenido aparece **al instante** en el sitio, usando **GitHub** como storage. Sin builds, sin deploys.
+# DocHubs
+
+**Documentación técnica que se publica al instante — sin build, sin deploy.**
+
+Escribes en `/admin`, el contenido se guarda como commit en tu propio repo de GitHub,
+y aparece en el sitio al momento. GitHub es el storage; no hay base de datos que mantener.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+
+</div>
+
+<!--
+  TODO: agregar aquí un GIF o screenshot real mostrando el flujo
+  admin -> guardar -> doc publicado en /docs. Sin este demo visual
+  es mucho más difícil que alguien entienda el producto en 10 segundos.
+-->
+
+## ¿Por qué DocHubs?
+
+La mayoría de generadores de docs (Docusaurus, Nextra, VitePress...) necesitan un
+build y un deploy cada vez que alguien edita una página. DocHubs invierte eso:
+
+- **Editas en el navegador** desde `/admin`, con preview en vivo.
+- **Se guarda como commit real** en un repo de GitHub — tienes historial, diffs y
+  control de versiones gratis, sin construir nada para lograrlo.
+- **Se publica al instante** (ISR de 120s), sin pipeline de CI/CD de por medio.
+- **No hay base de datos que administrar.** El repo de GitHub *es* la base de datos.
+
+Ideal para equipos pequeños que quieren un doc-hub propio, versionado, sin pagar
+por un SaaS ni mantener infraestructura.
+
+## Features
+
+- 📝 Editor Markdown con preview en vivo y subida de imágenes al repo
+- 🔍 Búsqueda ⌘K con `cmdk`
+- 🌓 Tema oscuro/claro
+- 📚 Sidebar, tabla de contenidos y navegación prev/next automáticos
+- 🔐 Auth propia con JWT + bcrypt (sin proveedor externo)
+- 🤖 Servidor MCP incluido (`mcp/`) para que agentes de IA (Claude, Cursor, etc.)
+  lean y escriban docs directamente
 
 ## Stack
 
@@ -52,6 +93,7 @@ credenciales desde variables de entorno.
 ### 4. Ejecutar
 
 ```bash
+npm install
 npm run dev
 ```
 
@@ -109,11 +151,14 @@ lib/
   auth.ts                       # JWT / bcrypt
   utils.ts                      # cn()
 data/
-  users.json                    # Usuarios admin (solo local)
+  users.example.json            # Template de usuarios admin
+  users.json                    # Usuarios admin reales (no se sube, ver .gitignore)
 types/
   index.ts                      # Tipos globales
 scripts/
   hash-password.mjs             # Genera hashes bcrypt
+mcp/
+  server.ts                     # Servidor MCP para agentes de IA
 ```
 
 ## Seguridad
@@ -123,6 +168,7 @@ scripts/
 - El Markdown se sanitiza con `rehype-sanitize` (previene XSS).
 - Tamaño máximo de upload: **2 MB**.
 - Sesión JWT con expiración de **8 horas**.
+- `data/users.json` nunca se commitea (ver `data/users.example.json`).
 
 ## Deployment (Vercel)
 
@@ -130,33 +176,11 @@ scripts/
 2. En "Environment Variables" añade las mismas vars del `.env.example`.
 3. Deploy. No necesitas hacer nada más — el contenido se gestiona desde el panel admin.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Contribuir
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+¿Quieres agregar una feature o reportar un bug? Lee [CONTRIBUTING.md](./CONTRIBUTING.md).
+Este proyecto sigue el [Código de Conducta](./CODE_OF_CONDUCT.md).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Licencia
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[MIT](./LICENSE) © Miller Zamora & Sam Vasquez
