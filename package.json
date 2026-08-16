@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "hash-password": "node scripts/hash-password.mjs",
+    "seed-demo": "node scripts/seed-demo-docs.mjs",
     "mcp": "tsx mcp/server.ts"
   },
   "dependencies": {
