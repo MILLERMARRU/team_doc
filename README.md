@@ -155,6 +155,79 @@ automáticamente. Si no las configurás, la pestaña "Analytics" del panel
 simplemente muestra un error al cargar — el resto del sitio sigue
 funcionando igual (no es una dependencia dura).
 
+## Servidor MCP (agentes de IA)
+
+DocHubs incluye un servidor [MCP](https://modelcontextprotocol.io) (`mcp/`,
+publicado como paquete npm `dochubs-mcp`) que le da a cualquier asistente de
+IA compatible — Claude Code, Cursor, Windsurf, Gemini CLI, Cline — acceso
+directo para **crear, leer, actualizar y borrar docs** sin pasar por el
+panel `/admin`.
+
+### Qué hace exactamente
+
+| Tool MCP | Qué hace |
+|---|---|
+| `create_doc` | Crea un doc nuevo (auto-genera slug, sección, tags) |
+| `update_doc` | Actualiza un doc existente por slug |
+| `get_doc` | Lee el Markdown completo de un doc |
+| `list_docs` | Lista todos los docs, opcionalmente filtrados por sección |
+| `delete_doc` | Borra un doc (respeta el `createdBy`, igual que el panel) |
+
+### Qué necesita para funcionar
+
+El MCP corre como un **proceso aparte** (no es parte del servidor Next.js),
+así que necesita sus propias credenciales — no las toma automáticamente de
+tu `.env.local` salvo que lo corras localmente dentro de este repo con
+`npm run mcp`.
+
+| Variable | Para qué | Obligatoria |
+|---|---|---|
+| `GITHUB_TOKEN` | El mismo PAT que usa la app para leer/escribir en el repo de docs (`Contents: Read and write`) | Sí |
+| `GITHUB_OWNER` | Owner del repo de docs | Sí |
+| `GITHUB_REPO` | Nombre del repo de docs | Sí |
+| `GITHUB_BRANCH` | Branch (default `main`) | No |
+| `SITE_URL` | URL pública de tu deploy (o `http://localhost:3000` en dev) | No |
+| `REVALIDATE_SECRET` | Mismo valor que en `.env.local` — sin esto, los cambios tardan hasta 2 min en verse (ISR) en vez de al instante | No, pero recomendado |
+
+**Importante:** el `GITHUB_TOKEN` que le des al MCP tiene los mismos
+permisos de escritura que le diste a la app. Si vas a compartir el acceso
+con otra persona o con un cliente de IA que corre en otra máquina, considerá
+generar un Fine-grained PAT **aparte**, con acceso solo al repo de docs, en
+vez de reusar el mismo token de `.env.local`.
+
+### Cómo conectarlo
+
+Cualquier cliente MCP se configura igual: un bloque JSON con el comando para
+levantar el server y las env vars de arriba. Ejemplo genérico (Claude Code,
+`.mcp.json` en la raíz del proyecto o `~/.claude/settings.json`):
+
+```json
+{
+  "mcpServers": {
+    "dochubs": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["dochubs-mcp"],
+      "env": {
+        "GITHUB_TOKEN": "tu-token-aquí",
+        "GITHUB_OWNER": "tu-usuario-github",
+        "GITHUB_REPO": "mi-docs",
+        "GITHUB_BRANCH": "main",
+        "SITE_URL": "https://tu-deploy.vercel.app",
+        "REVALIDATE_SECRET": "el-mismo-valor-de-.env.local"
+      }
+    }
+  }
+}
+```
+
+En **Windows**, `npx` necesita el wrapper `cmd /c` — reemplazá `command` y
+`args` por `"command": "cmd", "args": ["/c", "npx", "dochubs-mcp"]`.
+
+Para copiar/pegar la config exacta de Cursor, Windsurf, Gemini CLI y
+Cline/Roo Code (con la variante Windows de cada uno), ver
+[`mcp/README.md`](./mcp/README.md).
+
 ## Rutas
 
 | Ruta | Descripción |
@@ -174,6 +247,7 @@ funcionando igual (no es una dependencia dura).
 | `/api/docs/history/restore` | POST – Restaura un doc a una versión anterior |
 | `/api/docs/track-view` | POST – Registra una vista de un doc (pública) |
 | `/api/admin/analytics` | GET – Vistas por doc (requiere sesión) |
+| `/api/revalidate` | POST – Invalida el caché ISR al instante (usado por el MCP, ver abajo) |
 
 ## Estructura del proyecto
 
