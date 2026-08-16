@@ -1,0 +1,6 @@
+[
+  {
+    "username": "admin",
+    "passwordHash": "REEMPLAZA_ESTE_VALOR_CON_npm_run_hash-password"
+  }
+]
