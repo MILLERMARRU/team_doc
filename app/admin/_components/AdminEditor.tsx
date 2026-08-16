@@ -26,8 +26,10 @@ import {
   LayoutList,
   Pencil,
   X,
+  Users,
 } from "lucide-react";
 import DocsBrowser from "./DocsBrowser";
+import UsersPanel from "./UsersPanel";
 import { toast } from "sonner";
 import Markdown from "@/components/docs/Markdown";
 import { Button } from "@/components/ui/button";
@@ -40,15 +42,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { DocsIndex, DocItem } from "@/types";
+import type { DocsIndex, DocItem, UserRole } from "@/types";
 
 // ── Componente principal ─────────────────────────────────────
 interface AdminEditorProps {
   username: string;
+  role: UserRole;
   index: DocsIndex;
 }
 
-export default function AdminEditor({ username, index }: AdminEditorProps) {
+export default function AdminEditor({ username, role, index }: AdminEditorProps) {
   const router      = useRouter();
   const fileRef     = useRef<HTMLInputElement>(null);
   const imageRef    = useRef<HTMLInputElement>(null);
@@ -69,8 +72,8 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
   const [loading, setLoading]               = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  // ── Vista activa: editor o explorador ───────────────────
-  const [view, setView] = useState<"new" | "browser">("new");
+  // ── Vista activa: editor, explorador o usuarios ─────────
+  const [view, setView] = useState<"new" | "browser" | "users">("new");
   // Ítem que se está editando (null = documento nuevo)
   const [editingItem, setEditingItem] = useState<DocItem | null>(null);
 
@@ -387,12 +390,29 @@ export default function AdminEditor({ username, index }: AdminEditorProps) {
               </span>
             )}
           </button>
+          {role === "admin" && (
+            <button
+              type="button"
+              onClick={() => setView("users")}
+              className={`cursor-pointer flex flex-1 sm:flex-initial items-center justify-center sm:justify-start gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                view === "users"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Users className="h-3.5 w-3.5" />
+              Usuarios
+            </button>
+          )}
         </div>
 
         {/* ── Vista: Explorador de documentos ── */}
         {view === "browser" && (
           <DocsBrowser index={index} username={username} onEditRequest={startEdit} />
         )}
+
+        {/* ── Vista: Gestión de usuarios (solo admin) ── */}
+        {view === "users" && role === "admin" && <UsersPanel />}
 
         {/* ── Vista: Formulario editor ── */}
         {view === "new" && (
