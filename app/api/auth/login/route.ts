@@ -24,17 +24,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const valid = await verifyCredentials(username, password);
-  if (!valid) {
+  const { ok, role } = await verifyCredentials(username, password);
+  if (!ok || !role) {
     return NextResponse.json(
       { error: "Credenciales incorrectas" },
       { status: 401 }
     );
   }
 
-  const token = await createSession(username);
+  const token = await createSession(username, role);
 
-  const res = NextResponse.json({ ok: true, username });
+  const res = NextResponse.json({ ok: true, username, role });
   res.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
